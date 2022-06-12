@@ -11,6 +11,5 @@ internal abstract class BinaryTerm : AST
     }
 
     public override object? Call() => Call(FirstValue, SecondValue);
-
     protected abstract object? Call(AST? firstValue, AST? secondValue);
 }

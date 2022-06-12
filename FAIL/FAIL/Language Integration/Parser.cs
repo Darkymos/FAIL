@@ -8,7 +8,7 @@ internal class Parser
 {
     public Tokenizer Tokenizer { get; }
 
-    private IEnumerator<Token> tokens;
+    private readonly IEnumerator<Token> tokens;
     private Token? currentToken;
 
     public Parser(string filePath)
@@ -24,9 +24,7 @@ internal class Parser
         if (IsEOT()) return null;
 
         var ast = ParseCommandList(TokenType.EndOfLine);
-        if (!IsEOT()) throw new InvalidOperationException();
-
-        return ast;
+        return !IsEOT() ? throw new InvalidOperationException() : ast;
     }
 
     private AST? ParseCommandList(TokenType breakSign, TokenType eotMarker = TokenType.None)
@@ -43,15 +41,11 @@ internal class Parser
     }
     private AST? ParseCommand(TokenType breakSign, TokenType eotMarker = TokenType.None)
     {
-        if (currentToken!.Type == TokenType.FunctionKeyWord)
-        {
-            return ParseFunctionKeyword();
-        }
-        else if (currentToken!.Type == TokenType.Int)
-        {
-            return ParseTerm();
-        }
-        else throw new NotSupportedException();
+        return currentToken!.Type == TokenType.FunctionKeyWord
+            ? ParseFunctionKeyword()
+            : currentToken!.Type == TokenType.Int 
+                ? ParseTerm() 
+                : throw new NotSupportedException();
     }
 
     private AST? ParseFunctionKeyword()

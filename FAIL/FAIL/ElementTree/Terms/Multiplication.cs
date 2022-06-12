@@ -5,8 +5,5 @@ internal class Multiplication : BinaryTerm
     {
     }
 
-    protected override object? Call(AST? firstValue, AST? secondValue)
-    {
-        return firstValue!.Token!.Value * secondValue!.Token!.Value;
-    }
+    protected override object? Call(AST? firstValue, AST? secondValue) => firstValue!.Token!.Value * secondValue!.Token!.Value;
 }

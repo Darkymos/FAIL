@@ -1,0 +1,11 @@
+28.06.2022 15:58:48 | Debug    | Element of type 'Addition' has exited with value '48'.
+28.06.2022 15:58:48 | Debug    | Element of type 'Substraction' has exited with value '86'.
+28.06.2022 15:58:48 | Debug    | Element of type 'Addition' has exited with value '95'.
+28.06.2022 15:58:48 | Debug    | Element of type 'Substraction' has exited with value '105'.
+28.06.2022 15:58:48 | Debug    | Element of type 'Multiplication' has exited with value '783'.
+28.06.2022 15:58:48 | Debug    | Element of type 'Division' has exited with value '9'.
+28.06.2022 15:58:49 | Debug    | Element of type 'Division' has exited with value '8'.
+28.06.2022 15:58:49 | Debug    | Element of type 'Division' has exited with value '45'.
+28.06.2022 15:58:49 | Debug    | Element of type 'Multiplication' has exited with value '65'.
+28.06.2022 15:58:49 | Debug    | Element of type 'Addition' has exited with value '10'.
+28.06.2022 15:58:49 | Info     | CommandList with 10 elements

@@ -2,7 +2,6 @@
 internal enum State
 {
     Start,
-    String,
     Int,
-    Float,
+    Text,
 }

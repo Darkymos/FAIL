@@ -1,136 +1,196 @@
-﻿using System.Globalization;
+﻿using FAIL.Exceptions;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 [assembly: InternalsVisibleTo("FAIL Test")]
-
 namespace FAIL.Language_Integration;
-internal class Tokenizer
+
+internal record struct Token(TokenType Type, dynamic Value, uint Row, uint Column, string FileName);
+
+internal class Tokenizer : IEnumerable<Token>
 {
-    private readonly CultureInfo culture = new("en-US");
-
-    public string Raw { get; }
-    public List<Token?> Tokens { get; } = new();
-    public string FileName { get; }
-    public Dictionary<string, TokenType> Operators { get; } = new()
+    public string File { get; }
+    public static Dictionary<string, TokenType> Operators { get; } = new()
     {
-        { "(", TokenType.LeftParenthesis },
-        { ")", TokenType.RightParenthesis },
-        { "+", TokenType.Operator },
-        { "-", TokenType.Operator },
-        { "*", TokenType.Operator },
-        { "/", TokenType.Operator },
-        { ";", TokenType.EndOfLine },
-
-        { "WriteLine", TokenType.FunctionKeyWord },
+        { "+", TokenType.StrokeCalculation },
+        { "-", TokenType.StrokeCalculation },
+        { "*", TokenType.DotCalculation },
+        { "/", TokenType.DotCalculation },
+        { ";", TokenType.EndOfStatement },
     };
 
     private uint row = 1;
     private uint column = 0;
 
-    public Tokenizer(string fileName)
+    private StringBuilder buffer = new();
+    private State currentState = State.Start;
+    private bool isCommented = false;
+
+    private readonly char[] Raw;
+    private int currentPosition = 0;
+
+
+    public Tokenizer(string file)
     {
-        FileName = fileName;
-
-        using (var stream = File.OpenText(fileName))
-        {
-            Raw = stream.ReadToEnd();
-        }
-
-        Deseriaize();
+        File = file;
+        Raw = file.ToCharArray();
     }
 
-    private void Deseriaize()
+
+    public IEnumerator<Token> GetEnumerator()
     {
-        StringBuilder buffer = new();
-
-        foreach (var character in Raw)
+        while (true)
         {
-            buffer.Append(character);
+            var nullableCharacter = Read();
+            column++;
 
+            // check for end of file
+            if (nullableCharacter is null)
+            {
+                var possibleToken = CheckForValidToken();
+                if (possibleToken is not null) yield return possibleToken.Value;
+                yield break;
+            }
+            var character = nullableCharacter.Value;
+
+            // end of line reached, doesn't mean the current statement's end though
             if (character == '\n')
             {
-                row++;
-                column = 0;
+                EndOfLine();
+                continue;
             }
-            else if (character == ' ')
-            {
-                var token = CreateToken(buffer);
-                if (token is not null) Tokens.Add(token);
 
-                buffer = new();
+            // contents in comments are skipped
+            if (isCommented) continue;
+
+            // check for a comment assignment 
+            if (character == '/' && character + LookAhead(1) == "//")
+            {
+                isCommented = true;
+                continue;
             }
-            else if (Operators.ContainsKey(character.ToString()))
+
+            // all whitespace are considered as an end of the current token
+            if (char.IsWhiteSpace(character))
             {
-                var token = CreateToken(new(buffer.ToString()[..^1]));
-                if (token is not null) Tokens.Add(token);
-
-                token = CreateToken(new(buffer[^1].ToString()));
-                if (token is not null) Tokens.Add(token);
-
-                buffer = new();
+                var possibleToken = CheckForValidToken(false);
+                if (possibleToken is not null) yield return possibleToken.Value;
+                continue;
             }
-            else if (character == Raw.Last())
+
+            // check for any kind of operator specified in the Operators dictionary
+            var tokens = CheckForOperator(character).ToList();
+            if (tokens.Count > 0)
             {
-                var token = CreateToken(buffer);
-                if (token is not null) Tokens.Add(token);
+                foreach (var token in tokens) if (token is not null) yield return token.Value;
+                continue;
             }
-            else
+
+            while (true)
             {
-                column++;
-            }
-        }
-
-        Tokens.Add(new(TokenType.EndOfText, "", row, column, FileName));
-    }
-
-    private Token? CreateToken(StringBuilder buffer)
-    {
-        var raw = buffer.ToString();
-        StringBuilder internalBuffer = new();
-        var state = State.Start;
-
-        if (raw == " ") return null;
-
-        foreach (var character in raw)
-        {
-            internalBuffer.Append(character);
-
-            if (state == State.Start)
-            {
-                if (character == '"')
+                if (currentState == State.Start)
                 {
-                    state = State.String;
-                    internalBuffer.Remove(0, 1);
+                    buffer.Append(character);
+
+                    if (char.IsDigit(character))
+                    {
+                        currentState = State.Int;
+                        break;
+                    }
+
+                    break;
                 }
-                else if (char.IsNumber(character))
+                if (currentState == State.Int)
                 {
-                    state = State.Int;
-                }
-                else if (Operators.ContainsKey(character.ToString()))
-                {
-                    return new(Operators[character.ToString()], character.ToString(), row, column, FileName);
-                }
-            }
-            else if (state == State.String)
-            {
-                if (character == '"') return new(TokenType.String, internalBuffer.Remove(internalBuffer.Length - 1, 1).ToString(), row, column, FileName);
-            }
-            else if (state == State.Int)
-            {
-                if (character == '.')
-                {
-                    state = State.Float;
+                    if (char.IsDigit(character))
+                    {
+                        buffer.Append(character);
+                        break;
+                    }
+
+                    var possibleToken = CheckForValidToken(false);
+                    if (possibleToken is not null) yield return possibleToken.Value;
+                    currentState = State.Start;
                     continue;
                 }
-                if (raw.Last() == character) return new(TokenType.Int, Convert.ToInt32(internalBuffer.ToString(), culture), row, column, FileName);
-            }
-            else if (state == State.Float)
-            {
-                if (raw.Last() == character) return new(TokenType.Float, Convert.ToSingle(internalBuffer.ToString(), culture), row, column, FileName);
+                if (currentState == State.Text)
+                {
+                    buffer.Append(character);
+                    break;
+                }
             }
         }
+    }
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        return null; 
+    private char? Read() => currentPosition >= Raw.Length ? null : Raw[currentPosition++];
+    private char[]? Read(int length)
+    {
+        if (currentPosition + length >= Raw.Length) return null;
+
+        var val = Raw[currentPosition..(currentPosition + length)];
+        currentPosition += length;
+        return val;
+    }
+
+    private Token? ClearBuffer()
+    {
+        Token? token;
+
+        if (buffer.Length == 0) token = null;
+        else if (currentState == State.Int) token = new(TokenType.Number, Convert.ToInt32(buffer.ToString()), row, column, File);
+        else token = null;
+
+        buffer = new();
+        currentState = State.Start;
+
+        return token;
+    }
+    private string LookAhead(int length)
+    {
+        var val = Read(length);
+        currentPosition -= length;
+
+        return val is null ? "" : val.ToString()!;
+    }
+
+    private Token? CheckForValidToken(bool throwException = true)
+    {
+        var possibleToken = ClearBuffer();
+        if (possibleToken is not null) return possibleToken;
+        else if (throwException) throw ExceptionCreator.IterationEnded();
+        return null;
+    }
+    private IEnumerable<Token?> CheckForOperator(char character)
+    {
+        foreach (var op in Operators.Keys)
+        {
+            if (character.ToString() == op)
+            {
+                yield return ClearBuffer();
+                yield return new(Operators[op], op, row, column, File);
+                yield break;
+            }
+
+            if (character == op[0])
+            {
+                var operatorString = character + LookAhead(op.Length - 1);
+                if (operatorString == op)
+                {
+                    yield return ClearBuffer();
+                    Read(op.Length - 1);
+                    yield return new(Operators[op], operatorString, row, column, File);
+                    yield break;
+                }
+
+            }
+        }
+    }
+
+    private void EndOfLine()
+    {
+        row++;
+        column = 0;
+        isCommented = false;
     }
 }

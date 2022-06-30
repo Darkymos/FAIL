@@ -14,7 +14,7 @@ internal class Interpreter
     public Interpreter(LogLevel level, params string[] fileNames)
     {
         FileNames = fileNames;
-        Logger = new(level, new StreamWriter(File.Create(Directory.GetCurrentDirectory().Split(@"\bin")[0] + @"\log.txt")));
+        Logger = new(new(File.Create(Directory.GetCurrentDirectory().Split(@"\bin")[0] + @$"\log.txt"), Encoding.Unicode), level);
 
         var code = new StringBuilder();
 
@@ -23,7 +23,7 @@ internal class Interpreter
             code.Append(File.OpenText(fileName).ReadToEnd());
         }
 
-        AST = new Parser(code.ToString()).Parse();
+        AST = new Parser(code.ToString(), fileNames[^1]).Parse();
         Result = AST?.Call();
 
         Logger.Log(AST!, LogLevel.Info);

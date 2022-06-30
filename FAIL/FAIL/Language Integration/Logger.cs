@@ -1,35 +1,35 @@
-﻿namespace FAIL.Language_Integration;
+﻿using static System.FormattableString;
+
+namespace FAIL.Language_Integration;
 internal class Logger : IDisposable
 {
     private bool disposedValue;
 
     public LogLevel Level { get; set; }
-    public StreamWriter? Stream { get; init; }
+    public StreamWriter Stream { private get; init; }
 
 
-    public Logger(LogLevel level = LogLevel.Warn, StreamWriter? stream = null)
+    public Logger(StreamWriter stream, LogLevel level = LogLevel.Warn)
     {
         Level = level;
         Stream = stream;
 
-        if (stream is not null) stream.AutoFlush = true;
+        stream.AutoFlush = true;
     }
 
-
+    
     public bool Log(dynamic value, LogLevel level)
     {
         if (level < Level) return false;
-        if (Stream is null) return false;
 
-        Stream.WriteLine($"{DateTime.Now,19} | {level,-8} | {value}");
+        Stream.WriteLine(Invariant($"{DateTime.Now,19} | {level,-8} | {value:N2}"));
         return true;
     }
     public bool Log(dynamic value, dynamic sender, LogLevel level)
     {
         if (level < Level) return false;
-        if (Stream is null) return false;
 
-        Stream.WriteLine($"{DateTime.Now,19} | {level,-8} | Element of type '{sender.GetType().Name}' has exited with value '{value}'.");
+        Stream.WriteLine(Invariant($"{DateTime.Now,19} | {level,-8} | Element of type '{sender.GetType().Name}' has exited with value '{value:N2}'."));
         return true;
     }
 
@@ -40,7 +40,7 @@ internal class Logger : IDisposable
         {
             if (disposing)
             {
-                Stream?.Dispose();
+                Stream.Close();
                 // TODO: dispose managed state (managed objects)
             }
 

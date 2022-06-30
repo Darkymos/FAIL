@@ -11,9 +11,9 @@ internal class Parser
     private Token? CurrentToken = null;
 
 
-    public Parser(string file)
+    public Parser(string file, string fileName)
     {
-        Tokenizer = new(file);
+        Tokenizer = new(file, fileName);
 
         AcceptAny();
     }
@@ -84,7 +84,7 @@ internal class Parser
                                                                       new(TokenType.Number, 0, 0, 0, "None")), 
                                                                   ParseTerm())));
         }
-        if (IsTypeOf(TokenType.Number))
+        if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String))
         {
             var token = CurrentToken;
             AcceptAny();

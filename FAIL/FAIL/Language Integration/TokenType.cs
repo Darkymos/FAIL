@@ -8,4 +8,5 @@ internal enum TokenType
     DotCalculation,
 
     EndOfStatement,
+    String,
 }

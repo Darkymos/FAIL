@@ -8,5 +8,15 @@ internal class Addition : BinaryOperator
     }
 
 
-    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter) => firstParameter + secondParameter;
+    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter)
+    {
+        try
+        {
+            return firstParameter + secondParameter;
+        }
+        catch (InvalidOperationException)
+        {
+            return firstParameter.ToString() + secondParameter.ToString();
+        }
+    }
 }

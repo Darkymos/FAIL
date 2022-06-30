@@ -20,4 +20,12 @@ internal static class ExceptionCreator
     }
 
     public static StopIterationException IterationEnded() => new();
+
+    public static SyntaxException NotAChar(string value, string fileName)
+    {
+        var message = $"Expression {value} is not a valid char!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(message, fileName);
+    }
 }

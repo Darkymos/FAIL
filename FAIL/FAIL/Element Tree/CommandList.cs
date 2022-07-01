@@ -23,7 +23,7 @@ internal class CommandList : AST
         foreach (var command in Commands)
         {
             results.Add(command?.Call());
-            Interpreter.Logger?.Log(results[^1], command, LogLevel.Debug);
+            Interpreter.Logger?.Log(results[^1], command, LogLevel.Info);
         }
 
         return results;

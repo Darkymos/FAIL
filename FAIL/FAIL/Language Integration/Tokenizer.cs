@@ -13,6 +13,8 @@ internal class Tokenizer : IEnumerable<Token>
     public string FileName { get; }
     public static Dictionary<string, TokenType> Operators { get; } = new()
     {
+        { "(", TokenType.OpeningParenthese },
+        { ")", TokenType.ClosingParenthese },
         { "+", TokenType.StrokeCalculation },
         { "-", TokenType.StrokeCalculation },
         { "*", TokenType.DotCalculation },

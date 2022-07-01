@@ -9,4 +9,6 @@ internal enum TokenType
 
     EndOfStatement,
     String,
+    OpeningParenthese,
+    ClosingParenthese,
 }

@@ -22,14 +22,14 @@ internal class Logger : IDisposable
     {
         if (level < Level) return false;
 
-        Stream.WriteLine(Invariant($"{DateTime.Now,19} | {level,-8} | {value:N2}"));
+        Stream.WriteLine(Invariant($"{DateTime.Now,19} | {level,-8} | {value}"));
         return true;
     }
     public bool Log(dynamic value, dynamic sender, LogLevel level)
     {
         if (level < Level) return false;
 
-        Stream.WriteLine(Invariant($"{DateTime.Now,19} | {level,-8} | Element of type '{sender.GetType().Name}' has exited with value '{value:N2}'."));
+        Stream.WriteLine(Invariant($"{DateTime.Now,19} | {level,-8} | Element of type '{sender.GetType().Name}' has exited with value '{value}'."));
         return true;
     }
 

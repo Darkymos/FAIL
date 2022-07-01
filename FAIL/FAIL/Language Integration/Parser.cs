@@ -76,6 +76,25 @@ internal class Parser
     }
     public AST? ParseTerm()
     {
+        if (IsTypeOf(TokenType.OpeningParenthese))
+        {
+            AcceptAny();
+            AST? subTerm;
+
+            if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
+            {
+                AcceptAny();
+                subTerm = ParseStrokeCalculation(ParseMultiplication(new Substraction(
+                                                                         new Element_Tree.DataTypes.Object(
+                                                                             new(TokenType.Number, 0, 0, 0, "None")),
+                                                                         ParseTerm())));
+            }
+            else subTerm = ParseStrokeCalculation();
+
+            Accept(TokenType.ClosingParenthese);
+            return subTerm;
+        }
+
         if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
         {
             AcceptAny();
@@ -84,6 +103,7 @@ internal class Parser
                                                                       new(TokenType.Number, 0, 0, 0, "None")), 
                                                                   ParseTerm())));
         }
+
         if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String))
         {
             var token = CurrentToken;

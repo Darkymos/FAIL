@@ -26,7 +26,8 @@ internal class Parser
         var ast = ParseCommandList(TokenType.EndOfStatement);
         return IsEOT() ? ast : throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value);
     }
-    public AST? ParseCommandList(TokenType endOfStatementSign, TokenType? endOfBlockSign = null)
+
+    protected AST? ParseCommandList(TokenType endOfStatementSign, TokenType? endOfBlockSign = null)
     {
         var commands = new List<AST?>();
 
@@ -35,15 +36,31 @@ internal class Parser
 
         return new CommandList(commands);
     }
-    public AST? ParseCommand(TokenType endOfStatementSign)
+    protected AST? ParseCommand(TokenType endOfStatementSign)
     {
-        AST? returnValue = ParseStrokeCalculation();
+        AST? result;
+
+        if (IsTypeOf(TokenType.KeyWord))
+        {
+            switch ((KeyWord)CurrentToken!.Value.Value)
+            {
+                case KeyWord.Log:
+                    result = ParseLog();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            };
+        }
+        else result = ParseStrokeCalculation();
+
         Accept(endOfStatementSign);
-        return returnValue;
+        return result;
     }
-    public Element_Tree.DataTypes.Object? ParseObject() => new(CurrentToken);
-    public AST? ParseStrokeCalculation() => ParseStrokeCalculation(ParseMultiplication());
-    public AST? ParseStrokeCalculation(AST? heap)
+
+    protected Element_Tree.DataTypes.Object? ParseObject() => new(CurrentToken);
+
+    protected AST? ParseStrokeCalculation() => ParseStrokeCalculation(ParseMultiplication());
+    protected AST? ParseStrokeCalculation(AST? heap)
     {
         if (IsEOT() || !IsTypeOf(TokenType.StrokeCalculation)) return heap;
 
@@ -55,8 +72,8 @@ internal class Parser
             ? ParseStrokeCalculation(new Addition(heap, secondParameter, token))
             : ParseStrokeCalculation(new Substraction(heap, secondParameter, token));
     }
-    public AST? ParseMultiplication() => ParseMultiplication(ParseTerm());
-    public AST? ParseMultiplication(AST? heap)
+    protected AST? ParseMultiplication() => ParseMultiplication(ParseTerm());
+    protected AST? ParseMultiplication(AST? heap)
     {
         if (IsEOT()) return heap;
 
@@ -74,7 +91,7 @@ internal class Parser
         }
         else return heap;
     }
-    public AST? ParseTerm()
+    protected AST? ParseTerm()
     {
         if (IsTypeOf(TokenType.OpeningParenthese))
         {
@@ -113,6 +130,14 @@ internal class Parser
 
         throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value);
     }
+
+    protected AST? ParseLog()
+    {
+        AcceptAny();
+        Accept(TokenType.OpeningParenthese);
+        return new Log(ParseCommand(TokenType.ClosingParenthese));
+    }
+
 
     private bool IsEOT() => CurrentToken is null;
     private bool IsTypeOf(TokenType type) => CurrentToken!.Value.Type == type;

@@ -21,6 +21,10 @@ internal class Tokenizer : IEnumerable<Token>
         { "/", TokenType.DotCalculation },
         { ";", TokenType.EndOfStatement },
     };
+    public static Dictionary<string, KeyWord> KeyWords { get; } = new()
+    {
+        { "log", KeyWord.Log },
+    };
 
     private uint Row = 1;
     private uint Column = 0;
@@ -209,7 +213,11 @@ internal class Tokenizer : IEnumerable<Token>
         else if (CurrentState == State.Double) token = new(TokenType.Number, Convert.ToDouble(Buffer.ToString(), new CultureInfo("en-US")), Row, Column, FileName);
         else if (CurrentState == State.String) token = new(TokenType.String, Buffer.ToString()[1..^1], Row, Column, FileName);
         else if (CurrentState == State.Char) token = new(TokenType.String, Buffer[1], Row, Column, FileName);
-        else token = null;
+        else
+        {
+            if (KeyWords.ContainsKey(Buffer.ToString())) token = new(TokenType.KeyWord, KeyWords[Buffer.ToString()], Row, Column, FileName);
+            else token = null;
+        }
 
         Buffer = new();
         CurrentState = State.Start;

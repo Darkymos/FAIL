@@ -11,4 +11,5 @@ internal enum TokenType
     String,
     OpeningParenthese,
     ClosingParenthese,
+    KeyWord,
 }

@@ -20,10 +20,12 @@ internal class Tokenizer : IEnumerable<Token>
         { "*", TokenType.DotCalculation },
         { "/", TokenType.DotCalculation },
         { ";", TokenType.EndOfStatement },
+        { "=", TokenType.Assignment },
     };
     public static Dictionary<string, KeyWord> KeyWords { get; } = new()
     {
         { "log", KeyWord.Log },
+        { "var", KeyWord.Var },
     };
 
     private uint Row = 1;
@@ -209,14 +211,15 @@ internal class Tokenizer : IEnumerable<Token>
         Token? token;
 
         if (Buffer.Length == 0) token = null;
-        else if (CurrentState == State.Int) token = new(TokenType.Number, Convert.ToInt32(Buffer.ToString()), Row, Column, FileName);
-        else if (CurrentState == State.Double) token = new(TokenType.Number, Convert.ToDouble(Buffer.ToString(), new CultureInfo("en-US")), Row, Column, FileName);
-        else if (CurrentState == State.String) token = new(TokenType.String, Buffer.ToString()[1..^1], Row, Column, FileName);
-        else if (CurrentState == State.Char) token = new(TokenType.String, Buffer[1], Row, Column, FileName);
+        else if (CurrentState == State.Int) token = new(TokenType.Number, Convert.ToInt32(Buffer.ToString()), Row, Column - (uint)Buffer.Length, FileName);
+        else if (CurrentState == State.Double) token = new(TokenType.Number, Convert.ToDouble(Buffer.ToString(), new CultureInfo("en-US")), Row, Column - (uint)Buffer.Length, FileName);
+        else if (CurrentState == State.String) token = new(TokenType.String, Buffer.ToString()[1..^1], Row, Column - (uint)Buffer.Length, FileName);
+        else if (CurrentState == State.Char) token = new(TokenType.String, Buffer[1], Row, Column - (uint)Buffer.Length, FileName);
         else
         {
-            if (KeyWords.ContainsKey(Buffer.ToString())) token = new(TokenType.KeyWord, KeyWords[Buffer.ToString()], Row, Column, FileName);
-            else token = null;
+            token = KeyWords.ContainsKey(Buffer.ToString())
+                ? (new(TokenType.KeyWord, KeyWords[Buffer.ToString()], Row, Column - (uint)Buffer.Length, FileName))
+                : (new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName));
         }
 
         Buffer = new();

@@ -32,48 +32,41 @@ internal class Parser
         var commands = new List<AST?>();
 
         while (!IsEOT() && (endOfBlockSign is null || !IsTypeOf(endOfBlockSign.Value))) 
-            commands.Add(ParseCommand(endOfStatementSign));
+            commands.Add(ParseCommand(commands, endOfStatementSign));
 
         return new CommandList(commands);
     }
-    protected AST? ParseCommand(TokenType endOfStatementSign)
+    protected AST? ParseCommand(List<AST?> scope, TokenType endOfStatementSign, bool acceptEndOfStatementSign = true)
     {
-        AST? result;
-
-        if (IsTypeOf(TokenType.KeyWord))
-        {
-            switch ((KeyWord)CurrentToken!.Value.Value)
-            {
-                case KeyWord.Log:
-                    result = ParseLog();
-                    break;
-                default:
-                    throw new NotImplementedException();
-            };
-        }
-        else result = ParseStrokeCalculation();
-
-        Accept(endOfStatementSign);
+        AST? result = IsTypeOf(TokenType.KeyWord)
+            ? (KeyWord)CurrentToken!.Value.Value switch
+              {
+                  KeyWord.Log => ParseLog(scope),
+                  KeyWord.Var => ParseVar(scope),
+                  _ => throw new NotImplementedException(),
+              }
+            : ParseStrokeCalculation(scope);
+        if (acceptEndOfStatementSign) Accept(endOfStatementSign);
         return result;
     }
 
     protected Element_Tree.DataTypes.Object? ParseObject() => new(CurrentToken);
 
-    protected AST? ParseStrokeCalculation() => ParseStrokeCalculation(ParseMultiplication());
-    protected AST? ParseStrokeCalculation(AST? heap)
+    protected AST? ParseStrokeCalculation(List<AST?> scope) => ParseStrokeCalculation(scope, ParseMultiplication(scope));
+    protected AST? ParseStrokeCalculation(List<AST?> scope, AST? heap)
     {
         if (IsEOT() || !IsTypeOf(TokenType.StrokeCalculation)) return heap;
 
         var token = CurrentToken;
         AcceptAny();
-        var secondParameter = ParseMultiplication();
+        var secondParameter = ParseMultiplication(scope);
 
         return HasValue(token, "+")
-            ? ParseStrokeCalculation(new Addition(heap, secondParameter, token))
-            : ParseStrokeCalculation(new Substraction(heap, secondParameter, token));
+            ? ParseStrokeCalculation(scope, new Addition(heap, secondParameter, token))
+            : ParseStrokeCalculation(scope, new Substraction(heap, secondParameter, token));
     }
-    protected AST? ParseMultiplication() => ParseMultiplication(ParseTerm());
-    protected AST? ParseMultiplication(AST? heap)
+    protected AST? ParseMultiplication(List<AST?> scope) => ParseMultiplication(scope, ParseTerm(scope));
+    protected AST? ParseMultiplication(List<AST?> scope, AST? heap)
     {
         if (IsEOT()) return heap;
 
@@ -82,16 +75,16 @@ internal class Parser
         if (HasValue(token, "*"))
         {
             AcceptAny();
-            return ParseMultiplication(new Multiplication(heap, ParseTerm(), token));
+            return ParseMultiplication(scope, new Multiplication(heap, ParseTerm(scope), token));
         }
         else if (HasValue(token, "/"))
         {
             AcceptAny();
-            return ParseMultiplication(new Division(heap, ParseTerm(), token));
+            return ParseMultiplication(scope, new Division(heap, ParseTerm(scope), token));
         }
         else return heap;
     }
-    protected AST? ParseTerm()
+    protected AST? ParseTerm(List<AST?> scope)
     {
         if (IsTypeOf(TokenType.OpeningParenthese))
         {
@@ -101,12 +94,14 @@ internal class Parser
             if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
             {
                 AcceptAny();
-                subTerm = ParseStrokeCalculation(ParseMultiplication(new Substraction(
+                subTerm = ParseStrokeCalculation(scope,
+                                                 ParseMultiplication(scope,
+                                                                     new Substraction(
                                                                          new Element_Tree.DataTypes.Object(
                                                                              new(TokenType.Number, 0, 0, 0, "None")),
-                                                                         ParseTerm())));
+                                                                         ParseTerm(scope))));
             }
-            else subTerm = ParseStrokeCalculation();
+            else subTerm = ParseStrokeCalculation(scope);
 
             Accept(TokenType.ClosingParenthese);
             return subTerm;
@@ -115,10 +110,12 @@ internal class Parser
         if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
         {
             AcceptAny();
-            return ParseStrokeCalculation(ParseMultiplication(new Substraction(
+            return ParseStrokeCalculation(scope,
+                                          ParseMultiplication(scope,
+                                                              new Substraction(
                                                                   new Element_Tree.DataTypes.Object(
                                                                       new(TokenType.Number, 0, 0, 0, "None")), 
-                                                                  ParseTerm())));
+                                                                  ParseTerm(scope))));
         }
 
         if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String))
@@ -128,14 +125,29 @@ internal class Parser
             return new Element_Tree.DataTypes.Object(token);
         }
 
+        if (IsTypeOf(TokenType.Identifier))
+        {
+            var token = CurrentToken;
+            AcceptAny();
+            return new Reference(scope, token);
+        }
+
         throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value);
     }
 
-    protected AST? ParseLog()
+    protected AST? ParseLog(List<AST?> scope)
     {
+        var logToken = CurrentToken;
         AcceptAny();
         Accept(TokenType.OpeningParenthese);
-        return new Log(ParseCommand(TokenType.ClosingParenthese));
+        return new Log(ParseCommand(scope, TokenType.ClosingParenthese), logToken);
+    }
+    protected AST? ParseVar(List<AST?> scope)
+    {
+        var identifier = AcceptAny();
+        Accept(TokenType.Identifier);
+        Accept(TokenType.Assignment);
+        return new Variable(identifier!.Value.Value, ParseCommand(scope, TokenType.EndOfStatement, false), identifier);
     }
 
 

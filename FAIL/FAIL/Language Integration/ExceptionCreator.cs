@@ -28,4 +28,12 @@ internal static class ExceptionCreator
         Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(message, fileName);
     }
+
+    public static NotAssignedException NotAssignedInScope(string varName)
+    {
+        var message = $"Variable named {varName} not assigned in current scope!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(varName, message);
+    }
 }

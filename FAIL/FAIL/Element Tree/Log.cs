@@ -1,4 +1,5 @@
 ﻿using FAIL.Language_Integration;
+using static System.FormattableString;
 
 namespace FAIL.Element_Tree;
 internal class Log : AST
@@ -13,8 +14,8 @@ internal class Log : AST
     {
         var result = Command?.Call();
 
-        Interpreter.Logger!.Log(result, Command, LogLevel.Info);
-        Console.WriteLine(result);
+        Interpreter.Logger!.Log(result, LogLevel.Debug);
+        Console.WriteLine(Invariant($"{result}"));
 
         return result;
     }

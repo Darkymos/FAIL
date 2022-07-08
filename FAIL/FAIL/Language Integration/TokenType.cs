@@ -12,4 +12,6 @@ internal enum TokenType
     OpeningParenthese,
     ClosingParenthese,
     KeyWord,
+    Identifier,
+    Assignment,
 }

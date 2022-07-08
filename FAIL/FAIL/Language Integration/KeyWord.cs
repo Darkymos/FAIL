@@ -1,5 +1,6 @@
 ﻿namespace FAIL.Language_Integration;
 internal enum KeyWord
 {
-    Log
+    Log,
+    Var
 }

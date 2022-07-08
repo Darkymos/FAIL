@@ -29,11 +29,16 @@ log(10. * 2);
 
 log((1 + 4) * 10);
 
-log("Hallo Welt!");
-log("Hallo " + "Welt!");
-log("Hallo Welt!" + 3); // test comment
+log("Hello World!");
+log("Hello " + "World!");
+log("Hello World!" + 3); // test comment
 
 log("10 + 5 is " + (10 + 5));
-log ("test");
+log ("test123");
+
+var test = "Hello World!";
+log(test);
+var anotherTest = test + 42;
+log(anotherTest);
 
 // end of program

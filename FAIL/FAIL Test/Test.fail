@@ -41,6 +41,8 @@ log(test);
 var anotherTest = test + 42;
 log(anotherTest);
 
+//var test = 42; already assigned!
+
 void TestFunction() {
 	var local = "test";
 	//log(test); not implemented yet
@@ -49,5 +51,13 @@ void TestFunction() {
 TestFunction();
 TestFunction();
 //log(local); not allowed, out of scope!
+
+//void TestFunction() { already assigned!
+//}
+//void test() { already assigned!
+//}
+
+test = 42;
+log(test);
 
 // end of program

@@ -38,7 +38,10 @@ internal class Parser
 
         return new CommandList(commands);
     }
-    protected AST? ParseCommand(List<AST?> scope, TokenType endOfStatementSign, TokenType? endOfBlockSign = null, bool acceptEndOfStatementSign = true)
+    protected AST? ParseCommand(List<AST?> scope, 
+                                TokenType endOfStatementSign, 
+                                TokenType? endOfBlockSign = null, 
+                                bool acceptEndOfStatementSign = true)
     {
         AST? result;
         var endOfStatementSignRequired = true;
@@ -140,11 +143,15 @@ internal class Parser
         {
             var token = CurrentToken;
             AcceptAny();
+
+            if (IsTypeOf(TokenType.Assignment)) return ParseAssignment(scope, token!.Value);
+
             if (IsTypeOf(TokenType.OpeningParenthese))
             {
                 Accept(TokenType.OpeningParenthese);
                 Accept(TokenType.ClosingParenthese);
             }
+
             return new Reference(scope, token);
         }
 
@@ -164,10 +171,14 @@ internal class Parser
     {
         var identifier = AcceptAny();
 
+        if (IsAssigned(scope, identifier!.Value.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
+
         Accept(TokenType.Identifier);
         Accept(TokenType.Assignment);
 
-        return new Variable(identifier!.Value.Value, ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false), identifier);
+        return new Variable(identifier!.Value.Value, 
+                            ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false), 
+                            identifier);
     }
     protected AST? ParseFunction(List<AST?> scope, out bool endOfStatementSignRequiredVariable)
     {
@@ -175,6 +186,8 @@ internal class Parser
 
         var returnType = CurrentToken;
         var identifier = AcceptAny();
+
+        if (IsAssigned(scope, identifier!.Value.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
 
         AcceptAny();
         Accept(TokenType.OpeningParenthese);
@@ -185,12 +198,34 @@ internal class Parser
 
         return new Function(identifier!.Value.Value, returnType!.Value.Value.ToString(), cmdList, identifier);
     }
+    protected AST? ParseAssignment(List<AST?> scope, Token token)
+    {
+        Accept(TokenType.Assignment);
+
+        if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
+        if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
+
+        return new Assignment(GetVariableFromScope(scope, token.Value), ParseStrokeCalculation(scope));
+    }
 
 
     private bool IsEOT() => CurrentToken is null;
     private bool IsTypeOf(TokenType type) => CurrentToken!.Value.Type == type;
     private bool HasValue(dynamic value) => CurrentToken!.Value.Value == value;
     private static bool HasValue(Token? token, dynamic value) => token!.Value.Value.GetType() == value.GetType() && token!.Value.Value == value;
+
+    private static bool IsAssigned(List<AST?> scope, string name)
+    {
+        if (GetVariableFromScope(scope, name) is not null) return true;
+        if (GetFunctionFromScope(scope, name) is not null) return true;
+        return false;
+    }
+    public static Variable? GetVariableFromScope(List<AST?> scope, string name) 
+        => scope.Where(x => x is Variable variable && variable.Name == name)
+                .FirstOrDefault() as Variable;
+    public static Function? GetFunctionFromScope(List<AST?> scope, string name)
+        => scope.Where(x => x is Function function && function.Name == name)
+                .FirstOrDefault() as Function;
 
     private Token? AcceptAny()
     {

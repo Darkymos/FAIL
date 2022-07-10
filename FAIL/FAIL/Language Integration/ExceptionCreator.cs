@@ -29,11 +29,21 @@ internal static class ExceptionCreator
         return new(message, fileName);
     }
 
-    public static NotAssignedException NotAssignedInScope(string varName)
+    public static NotAssignedException NotAssignedInScope(string name)
     {
-        var message = $" '{varName}' is not assigned in the current scope!";
+        var message = $"'{name}' is not assigned in the current scope!";
 
         Interpreter.Logger!.Log(message, LogLevel.Critical);
-        return new(varName, message);
+        return new(name, message);
     }
+
+    public static AlreadyAssignedException AlreadyAssignedInScope(string name)
+    {
+        var message = $"'{name}' is already defined in the current scope!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(name, message);
+    }
+
+    public static WrongTypeException VariableExpected() => new();
 }

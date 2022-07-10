@@ -8,10 +8,8 @@ internal class Reference : AST
 
     public Reference(List<AST?> scope, Token? token = null) : base(token)
     {
-        var variable = scope.Where(x => x is Variable variable && variable.Name == token!.Value.Value)
-                            .FirstOrDefault();
-        if (variable is null) variable = scope.Where(x => x is Function function && function.Name == token!.Value.Value)
-                                              .FirstOrDefault();
+        var variable = Parser.GetVariableFromScope(scope, token!.Value.Value);
+        if (variable is null) variable = Parser.GetFunctionFromScope(scope, token!.Value.Value);
         if (variable is null) throw ExceptionCreator.NotAssignedInScope(token!.Value.Value);
 
         Variable = variable;

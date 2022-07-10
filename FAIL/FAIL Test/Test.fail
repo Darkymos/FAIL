@@ -41,4 +41,13 @@ log(test);
 var anotherTest = test + 42;
 log(anotherTest);
 
+void TestFunction() {
+	var local = "test";
+	//log(test); not implemented yet
+	log("Hello World!");
+}
+TestFunction();
+TestFunction();
+//log(local); not allowed, out of scope!
+
 // end of program

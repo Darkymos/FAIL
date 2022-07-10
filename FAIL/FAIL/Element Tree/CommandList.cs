@@ -22,6 +22,8 @@ internal class CommandList : AST
 
         foreach (var command in Commands)
         {
+            if (command as Variable is not null || command as Function is not null) continue;
+
             results.Add(command?.Call());
             Interpreter.Logger?.Log(results[^1], command, LogLevel.Info);
         }

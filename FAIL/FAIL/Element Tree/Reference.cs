@@ -3,13 +3,18 @@
 namespace FAIL.Element_Tree;
 internal class Reference : AST
 {
-    private readonly Variable Variable;
+    private readonly AST Variable;
 
 
     public Reference(List<AST?> scope, Token? token = null) : base(token)
     {
-        Variable = scope.Where(x => x is Variable variable && variable.Name == token!.Value.Value)
-                        .FirstOrDefault() as Variable ?? throw ExceptionCreator.NotAssignedInScope(token!.Value.Value);
+        var variable = scope.Where(x => x is Variable variable && variable.Name == token!.Value.Value)
+                            .FirstOrDefault();
+        if (variable is null) variable = scope.Where(x => x is Function function && function.Name == token!.Value.Value)
+                                              .FirstOrDefault();
+        if (variable is null) throw ExceptionCreator.NotAssignedInScope(token!.Value.Value);
+
+        Variable = variable;
     }
 
 

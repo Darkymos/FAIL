@@ -2,5 +2,6 @@
 internal enum KeyWord
 {
     Log,
-    Var
+    Var,
+    Void,
 }

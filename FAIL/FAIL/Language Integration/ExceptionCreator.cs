@@ -31,7 +31,7 @@ internal static class ExceptionCreator
 
     public static NotAssignedException NotAssignedInScope(string varName)
     {
-        var message = $"Variable named {varName} not assigned in current scope!";
+        var message = $" '{varName}' is not assigned in the current scope!";
 
         Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(varName, message);

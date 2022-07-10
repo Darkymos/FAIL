@@ -14,4 +14,6 @@ internal enum TokenType
     KeyWord,
     Identifier,
     Assignment,
+    OpeningBracket,
+    ClosingBracket,
 }

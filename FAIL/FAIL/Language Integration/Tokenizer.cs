@@ -15,6 +15,8 @@ internal class Tokenizer : IEnumerable<Token>
     {
         { "(", TokenType.OpeningParenthese },
         { ")", TokenType.ClosingParenthese },
+        { "{", TokenType.OpeningBracket },
+        { "}", TokenType.ClosingBracket },
         { "+", TokenType.StrokeCalculation },
         { "-", TokenType.StrokeCalculation },
         { "*", TokenType.DotCalculation },
@@ -26,6 +28,7 @@ internal class Tokenizer : IEnumerable<Token>
     {
         { "log", KeyWord.Log },
         { "var", KeyWord.Var },
+        { "void", KeyWord.Void },
     };
 
     private uint Row = 1;

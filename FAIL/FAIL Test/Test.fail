@@ -1,21 +1,26 @@
-﻿log(45 + 3);
+﻿// simple integer stroke calculations
+log(45 + 3);
 log(90 - 4);
 log(100 - 10 + 5);
 log(100 + 10 - 5);
 
+// simple integer dot calculations
 log(87 * 9);
 log(90 / 10);
 log(90 / 11);
 log(90 * 10 / 20);
 log(100 / 20 * 13);
 
+// simple integer mixed calculation (dot before stroke)
 log(90 / 10 + 1);
 
+// simple double calculations
 log(9.5 + 8.7);
 log(7.1 - 0.1);
 log(0.5 * 3.5);
 log(1.5 / 0.5);
 
+// simple mixed double and integer calculations
 log(9 + 1.5);
 log(8 - 0.5);
 log(10 * 0.5);
@@ -27,22 +32,31 @@ log(0.5 / 5);
 log(10.0 * 2);
 log(10. * 2);
 
+// test for dot before stroke with parentheses
 log((1 + 4) * 10);
 
+// string tests
 log("Hello World!");
 log("Hello " + "World!");
 log("Hello World!" + 3); // test comment
 
+// string interpolation test
 log("10 + 5 is " + (10 + 5));
+
+// space between identifier and parenthese
 log ("test123");
 
+// variable tests
 var test = "Hello World!";
 log(test);
 var anotherTest = test + 42;
 log(anotherTest);
-
+test = 42;
+log(test);
+//log(test = "test"); // assignment not working!
 //var test = 42; already assigned!
 
+// function tests
 void TestFunction() {
 	var local = "test";
 	//log(test); not implemented yet
@@ -51,13 +65,9 @@ void TestFunction() {
 TestFunction();
 TestFunction();
 //log(local); not allowed, out of scope!
-
 //void TestFunction() { already assigned!
 //}
 //void test() { already assigned!
 //}
-
-test = 42;
-log(test);
 
 // end of program

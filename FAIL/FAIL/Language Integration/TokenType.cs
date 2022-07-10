@@ -16,4 +16,5 @@ internal enum TokenType
     Assignment,
     OpeningBracket,
     ClosingBracket,
+    Separator,
 }

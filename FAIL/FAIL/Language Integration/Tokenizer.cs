@@ -21,6 +21,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "-", TokenType.StrokeCalculation },
         { "*", TokenType.DotCalculation },
         { "/", TokenType.DotCalculation },
+        { ",", TokenType.Separator },
         { ";", TokenType.EndOfStatement },
         { "=", TokenType.Assignment },
     };

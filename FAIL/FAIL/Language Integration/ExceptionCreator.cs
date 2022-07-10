@@ -46,4 +46,12 @@ internal static class ExceptionCreator
     }
 
     public static WrongTypeException VariableExpected() => new();
+
+    public static WrongCountException WrongParameterCount(int expected, int given, string funcName)
+    {
+        var message = $"No overload for function '{funcName}' takes {given} arguments!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(expected, given, message);
+    }
 }

@@ -59,7 +59,7 @@ log(test);
 // function tests
 void TestFunction() {
 	var local = "test";
-	//log(test); not implemented yet
+	log(test); // variable from outer scope
 	log("Hello World!");
 }
 TestFunction();
@@ -69,5 +69,13 @@ TestFunction();
 //}
 //void test() { already assigned!
 //}
+
+// functions with parameters
+void Log(var value) {
+	log("Call to 'Log'");
+	log(value);
+}
+Log("test");
+Log(42);
 
 // end of program

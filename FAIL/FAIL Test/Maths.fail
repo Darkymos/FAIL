@@ -1,0 +1,3 @@
+﻿object Substract(var a, var b) {
+	return a - b;
+}

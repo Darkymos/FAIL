@@ -87,4 +87,7 @@ var result = Add(1, 2);
 log(result);
 log(Add(10, 5));
 
+// test for call in other file
+log(Substract(10, 5));
+
 // end of program

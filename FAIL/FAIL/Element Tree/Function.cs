@@ -1,4 +1,5 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.Exceptions;
+using FAIL.Language_Integration;
 
 namespace FAIL.Element_Tree;
 internal class Function : AST
@@ -18,5 +19,16 @@ internal class Function : AST
     }
 
 
-    public override dynamic? Call() => Body!.Call();
+    public override dynamic? Call()
+    {
+        try
+        {
+            Body!.Call();
+            return null;
+        }
+        catch (ReturnException ex)
+        {
+            return ex.Value;
+        }
+    }
 }

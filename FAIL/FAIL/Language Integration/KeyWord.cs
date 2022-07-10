@@ -4,4 +4,6 @@ internal enum KeyWord
     Log,
     Var,
     Void,
+    Object,
+    Return,
 }

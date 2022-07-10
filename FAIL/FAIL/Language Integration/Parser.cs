@@ -51,6 +51,8 @@ internal class Parser
             KeyWord.Log => ParseLog(scope),
             KeyWord.Var => ParseVar(scope),
             KeyWord.Void => ParseFunction(scope, out endOfStatementSignRequired),
+            KeyWord.Object => ParseFunction(scope, out endOfStatementSignRequired),
+            KeyWord.Return => ParseReturn(scope),
             _ => throw new NotImplementedException(),
         };
         else result = ParseStrokeCalculation(scope);
@@ -198,6 +200,8 @@ internal class Parser
         Accept(TokenType.OpeningBracket);
 
         var cmdList = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope, argList.Commands);
+        if (returnType!.Value.Value != KeyWord.Void && cmdList.Commands.Entries.Last() is not Return) 
+            throw ExceptionCreator.FunctionMustReturnValue(identifier!.Value.Value);
 
         return new Function(identifier!.Value.Value, returnType!.Value.Value.ToString(), argList, cmdList, identifier);
     }
@@ -209,6 +213,12 @@ internal class Parser
         if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
 
         return new Assignment(GetVariableFromScope(scope, token.Value), ParseStrokeCalculation(scope));
+    }
+    protected AST? ParseReturn(Scope scope)
+    {
+        var returnToken = CurrentToken;
+        AcceptAny();
+        return new Return(ParseCommand(scope, TokenType.EndOfStatement), returnToken);
     }
 
 

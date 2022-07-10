@@ -77,5 +77,14 @@ void Log(var value) {
 }
 Log("test");
 Log(42);
+//Log(42, "test"); wrong argument count!
+
+// functions with return value
+object Add(var a, var b) {
+	return a + b;
+}
+var result = Add(1, 2);
+log(result);
+log(Add(10, 5));
 
 // end of program

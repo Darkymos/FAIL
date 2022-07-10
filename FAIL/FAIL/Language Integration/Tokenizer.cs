@@ -30,6 +30,8 @@ internal class Tokenizer : IEnumerable<Token>
         { "log", KeyWord.Log },
         { "var", KeyWord.Var },
         { "void", KeyWord.Void },
+        { "object", KeyWord.Object },
+        { "return", KeyWord.Return },
     };
 
     private uint Row = 1;

@@ -54,4 +54,12 @@ internal static class ExceptionCreator
         Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(expected, given, message);
     }
+
+    public static Exception FunctionMustReturnValue(string funcName)
+    {
+        var message = $"Function '{funcName}' must return a value, as its return type is not void!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(message);
+    }
 }

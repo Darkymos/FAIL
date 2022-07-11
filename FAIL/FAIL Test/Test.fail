@@ -90,4 +90,8 @@ log(Add(10, 5));
 // test for call in other file
 log(Substract(10, 5));
 
+// booleans
+log(true);
+log(false);
+
 // end of program

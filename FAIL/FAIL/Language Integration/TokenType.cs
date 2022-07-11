@@ -17,4 +17,6 @@ internal enum TokenType
     OpeningBracket,
     ClosingBracket,
     Separator,
+    Boolean,
+    TestOperator,
 }

@@ -13,6 +13,7 @@ internal class Tokenizer : IEnumerable<Token>
     public string FileName { get; }
     public static Dictionary<string, TokenType> Operators { get; } = new()
     {
+        { "==", TokenType.TestOperator },
         { "(", TokenType.OpeningParenthese },
         { ")", TokenType.ClosingParenthese },
         { "{", TokenType.OpeningBracket },
@@ -137,6 +138,25 @@ internal class Tokenizer : IEnumerable<Token>
             {
                 foreach (var token in tokens) if (token is not null) yield return token.Value;
                 continue;
+            }
+
+            // booleans
+            if (CurrentState == State.Start)
+            {
+                if (character == 't' && character + LookAhead(3) == "true")
+                {
+                    Read(3);
+                    Buffer = new();
+                    yield return new(TokenType.Boolean, true, Row, Column, FileName);
+                    continue;
+                }
+                if (character == 'f' && character + LookAhead(4) == "false")
+                {
+                    Read(4);
+                    Buffer = new();
+                    yield return new(TokenType.Boolean, false, Row, Column, FileName);
+                    continue;
+                } 
             }
 
             // state maschine for different data types

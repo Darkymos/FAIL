@@ -55,7 +55,7 @@ internal class Parser
             KeyWord.Return => ParseReturn(scope),
             _ => throw new NotImplementedException(),
         };
-        else result = ParseStrokeCalculation(scope);
+        else result = ParseTerm(scope);
 
         if (acceptEndOfStatementSign 
             && endOfStatementSignRequired 
@@ -68,21 +68,19 @@ internal class Parser
 
     protected Element_Tree.DataTypes.Object? ParseObject() => new(CurrentToken);
 
-    protected AST? ParseStrokeCalculation(Scope scope) => ParseStrokeCalculation(scope, ParseMultiplication(scope));
     protected AST? ParseStrokeCalculation(Scope scope, AST? heap)
     {
         if (IsEOT() || !IsTypeOf(TokenType.StrokeCalculation)) return heap;
 
         var token = CurrentToken;
         AcceptAny();
-        var secondParameter = ParseMultiplication(scope);
+        var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
 
         return HasValue(token, "+")
-            ? ParseStrokeCalculation(scope, new Addition(heap, secondParameter, token))
-            : ParseStrokeCalculation(scope, new Substraction(heap, secondParameter, token));
+            ? ParseTerm(scope, Calculations.StrokeCalculations, new Addition(heap, secondParameter, token))
+            : ParseTerm(scope, Calculations.StrokeCalculations, new Substraction(heap, secondParameter, token));
     }
-    protected AST? ParseMultiplication(Scope scope) => ParseMultiplication(scope, ParseTerm(scope));
-    protected AST? ParseMultiplication(Scope scope, AST? heap)
+    protected AST? ParseDotCalculation(Scope scope, AST? heap)
     {
         if (IsEOT()) return heap;
 
@@ -91,16 +89,16 @@ internal class Parser
         if (HasValue(token, "*"))
         {
             AcceptAny();
-            return ParseMultiplication(scope, new Multiplication(heap, ParseTerm(scope), token));
+            return ParseTerm(scope, Calculations.DotCalculations, new Multiplication(heap, ParseTerm(scope, Calculations.Term), token));
         }
         else if (HasValue(token, "/"))
         {
             AcceptAny();
-            return ParseMultiplication(scope, new Division(heap, ParseTerm(scope), token));
+            return ParseTerm(scope, Calculations.DotCalculations, new Division(heap, ParseTerm(scope, Calculations.Term), token));
         }
         else return heap;
     }
-    protected AST? ParseTerm(Scope scope)
+    protected AST? ParseTerm(Scope scope, AST? heap)
     {
         if (IsTypeOf(TokenType.OpeningParenthese))
         {
@@ -110,28 +108,23 @@ internal class Parser
             if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
             {
                 AcceptAny();
-                subTerm = ParseStrokeCalculation(scope,
-                                                 ParseMultiplication(scope,
-                                                                     new Substraction(
-                                                                         new Element_Tree.DataTypes.Object(
-                                                                             new(TokenType.Number, 0, 0, 0, "None")),
-                                                                         ParseTerm(scope))));
+                subTerm = ParseTerm(scope,
+                                    Calculations.DotCalculations | Calculations.StrokeCalculations,
+                                    new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "None")),
+                                                     ParseTerm(scope, Calculations.Term)));
             }
-            else subTerm = ParseStrokeCalculation(scope);
+            else subTerm = ParseTerm(scope);
 
             Accept(TokenType.ClosingParenthese);
             return subTerm;
         }
-
         if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
         {
             AcceptAny();
-            return ParseStrokeCalculation(scope,
-                                          ParseMultiplication(scope,
-                                                              new Substraction(
-                                                                  new Element_Tree.DataTypes.Object(
-                                                                      new(TokenType.Number, 0, 0, 0, "None")), 
-                                                                  ParseTerm(scope))));
+            return ParseTerm(scope,
+                             Calculations.DotCalculations | Calculations.StrokeCalculations,
+                             new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "None")),
+                                              ParseTerm(scope, Calculations.Term)));
         }
 
         if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String))
@@ -158,7 +151,22 @@ internal class Parser
             return new Reference(scope, token);
         }
 
+        if (IsTypeOf(TokenType.Boolean))
+        {
+            var token = CurrentToken;
+            AcceptAny();
+            return new Element_Tree.DataTypes.Object(token);
+        }
+
         throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value);
+    }
+    protected AST? ParseTerm(Scope scope, Calculations calculations = (Calculations)7, AST? heap = null)
+    {
+        if (calculations.HasFlag(Calculations.Term)) heap = ParseTerm(scope, heap);
+        if (calculations.HasFlag(Calculations.DotCalculations)) heap = ParseDotCalculation(scope, heap);
+        if (calculations.HasFlag(Calculations.StrokeCalculations)) heap = ParseStrokeCalculation(scope, heap);
+
+        return heap;
     }
 
     protected AST? ParseLog(Scope scope)
@@ -212,7 +220,7 @@ internal class Parser
         if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
         if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
 
-        return new Assignment(GetVariableFromScope(scope, token.Value), ParseStrokeCalculation(scope));
+        return new Assignment(GetVariableFromScope(scope, token.Value), ParseTerm(scope));
     }
     protected AST? ParseReturn(Scope scope)
     {

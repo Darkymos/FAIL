@@ -100,6 +100,7 @@ log(true == false);
 log(1 == 1);
 log("h" == "s");
 log(1 == 10 - 9);
+log(6 + 1 == 2 * 3 + 1);
 log(true != false);
 log(test != test);
 

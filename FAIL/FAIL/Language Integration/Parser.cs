@@ -10,6 +10,22 @@ internal class Parser
     private IEnumerator<Token>? TokenEnumerator;
     private Token? CurrentToken = null;
 
+    private static readonly Dictionary<string, Type> DotOperatorMapper = new()
+    {
+        { "*", typeof(Multiplication) },
+        { "/", typeof(Division) },
+    };
+    private static readonly Dictionary<string, Type> StrokeOperatorMapper = new()
+    {
+        { "+", typeof(Addition) },
+        { "-", typeof(Substraction) },
+    };
+    private static readonly Dictionary<string, Type> TestOperatorMapper = new()
+    {
+        { "==", typeof(Equality) },
+        { "!=", typeof(NotEquality) },
+    };
+
 
     public Parser(string file, string fileName)
     {
@@ -132,20 +148,14 @@ internal class Parser
     {
         if (IsEOT() || !IsTypeOf(TokenType.DotCalculation)) return heap;
 
-        var token = CurrentToken;
-
-        if (HasValue(token, "*")) 
+        if (DotOperatorMapper.ContainsKey(GetValue()))
         {
+            var token = CurrentToken;
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.Term);
-            return ParseTerm(scope, Calculations.DotCalculations, new Multiplication(heap, secondParameter, token));
-        }
-
-        if (HasValue(token, "/")) 
-        {
-            AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.Term);
-            return ParseTerm(scope, Calculations.DotCalculations, new Division(heap, secondParameter, token));
+            return ParseTerm(scope,
+                             Calculations.DotCalculations | Calculations.StrokeCalculations | Calculations.TestOperations,
+                             Activator.CreateInstance(DotOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap;
@@ -154,20 +164,14 @@ internal class Parser
     {
         if (IsEOT() || !IsTypeOf(TokenType.StrokeCalculation)) return heap;
 
-        var token = CurrentToken;
-
-        if (HasValue(token, "+"))
+        if (StrokeOperatorMapper.ContainsKey(GetValue()))
         {
+            var token = CurrentToken;
             AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
-            return ParseTerm(scope, Calculations.StrokeCalculations, new Addition(heap, secondParameter, token));
-        }
-
-        if (HasValue(token, "-"))
-        {
-            AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
-            return ParseTerm(scope, Calculations.StrokeCalculations, new Substraction(heap, secondParameter, token));
+            var secondParameter = ParseTerm(scope, Calculations.DotCalculations | Calculations.Term);
+            return ParseTerm(scope,
+                             Calculations.StrokeCalculations | Calculations.TestOperations,
+                             Activator.CreateInstance(StrokeOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap;
@@ -176,20 +180,14 @@ internal class Parser
     {
         if (IsEOT() || !IsTypeOf(TokenType.TestOperator)) return heap;
 
-        var token = CurrentToken;
-
-        if (HasValue(token, "=="))
+        if (TestOperatorMapper.ContainsKey(GetValue()))
         {
+            var token = CurrentToken;
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
-            return ParseTerm(scope, Calculations.TestOperations, new Equality(heap, secondParameter, token));
-        }
-
-        if (HasValue(token, "!="))
-        {
-            AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
-            return ParseTerm(scope, Calculations.TestOperations, new NotEquality(heap, secondParameter, token));
+            return ParseTerm(scope, 
+                             Calculations.TestOperations, 
+                             Activator.CreateInstance(TestOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap;
@@ -265,7 +263,9 @@ internal class Parser
     private bool IsEOT() => CurrentToken is null;
     private bool IsTypeOf(TokenType type) => CurrentToken!.Value.Type == type;
     private bool HasValue(dynamic value) => CurrentToken!.Value.Value == value;
+    private dynamic GetValue() => CurrentToken!.Value.Value;
     private static bool HasValue(Token? token, dynamic value) => token!.Value.Value.GetType() == value.GetType() && token!.Value.Value == value;
+    private static dynamic GetValue(Token? token) => token!.Value.Value;
 
     private static bool IsAssigned(Scope scope, string name)
     {

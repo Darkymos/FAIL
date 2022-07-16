@@ -45,6 +45,8 @@ internal class Tokenizer : IEnumerable<Token>
         { "void", KeyWord.Void },
         { "object", KeyWord.Object },
         { "return", KeyWord.Return },
+        { "if", KeyWord.If },
+        { "else", KeyWord.Else },
     };
 
     private uint Row = 1;

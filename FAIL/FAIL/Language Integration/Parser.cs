@@ -73,6 +73,7 @@ internal class Parser
             KeyWord.Void => ParseFunction(scope, out endOfStatementSignRequired),
             KeyWord.Object => ParseFunction(scope, out endOfStatementSignRequired),
             KeyWord.Return => ParseReturn(scope),
+            KeyWord.If => ParseIf(scope, out endOfStatementSignRequired),
             _ => throw new NotImplementedException(),
         };
         else result = ParseTerm(scope);
@@ -250,7 +251,7 @@ internal class Parser
 
         return new Assignment(GetVariableFromScope(scope, token.Value), ParseTerm(scope));
     }
-    private AST ParseFunctionCall(Scope scope, Token? token)
+    protected AST ParseFunctionCall(Scope scope, Token? token)
     {
         Accept(TokenType.OpeningParenthese);
         var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
@@ -261,6 +262,34 @@ internal class Parser
         var returnToken = CurrentToken;
         AcceptAny();
         return new Return(ParseCommand(scope, TokenType.EndOfStatement), returnToken);
+    }
+    protected AST ParseIf(Scope scope, out bool endOfStatementSignRequiredVariable)
+    {
+        endOfStatementSignRequiredVariable = false;
+
+        var token = CurrentToken;
+        AcceptAny();
+
+        Accept(TokenType.OpeningParenthese);
+        var testCommand = ParseCommand(scope, TokenType.ClosingParenthese);
+
+        Accept(TokenType.OpeningBracket);
+        var ifBody = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope);
+
+        if (!IsEOT() && IsTypeOf(TokenType.KeyWord) && HasValue(KeyWord.Else))
+        {
+            AcceptAny();
+
+            if (IsTypeOf(TokenType.KeyWord) && HasValue(KeyWord.If))
+            {
+                return new If(testCommand!, ifBody, ParseIf(scope, out var dummy), token);
+            }
+
+            Accept(TokenType.OpeningBracket);
+            return new If(testCommand!, ifBody, ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope), token); 
+        }
+
+        return new If(testCommand!, ifBody, null, token);
     }
 
 

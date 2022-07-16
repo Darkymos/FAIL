@@ -46,6 +46,7 @@ internal static class ExceptionCreator
     }
 
     public static WrongTypeException VariableExpected() => new();
+    public static WrongTypeException BooleanExpected() => new();
 
     public static WrongCountException WrongParameterCount(int expected, int given, string funcName)
     {

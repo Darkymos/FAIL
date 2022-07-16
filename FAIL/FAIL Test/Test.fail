@@ -108,4 +108,26 @@ log(1 <= 0);
 log(42 > 1);
 log(42 < 1337);
 
+// if
+if (test == test) {
+	log("in if");
+}
+if (test != test) {
+	log("unreachable code");
+}
+if (test != test) {
+	log("unreachable code");
+} else {
+	log("in else");
+}
+if (42 == 1337) {
+	log("unreachable code");
+} 
+else if (42 == 42) {
+	log("in else if");
+}
+else {
+	log("unreachable code");
+}
+
 // end of program

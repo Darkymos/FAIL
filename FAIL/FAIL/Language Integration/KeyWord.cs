@@ -6,4 +6,6 @@ internal enum KeyWord
     Void,
     Object,
     Return,
+    If,
+    Else,
 }

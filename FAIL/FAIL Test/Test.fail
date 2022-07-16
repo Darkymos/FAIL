@@ -140,6 +140,7 @@ while (i < 10) {
 }
 
 // input
+log(input());
 log(input("Guess a number: "));
 
 // end of program

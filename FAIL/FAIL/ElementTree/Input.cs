@@ -10,9 +10,9 @@ internal class Input : AST
 
     public override dynamic? Call()
     {
-        var result = Command.Call();
+        var result = Command?.Call();
 
-        Console.Write(result);
+        if (result is not null) Console.Write(result);
         return Console.ReadLine();
     }
 }

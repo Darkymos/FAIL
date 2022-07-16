@@ -1,4 +1,5 @@
 ﻿using FAIL.LanguageIntegration;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace FAIL.ElementTree.BinaryOperators;
 internal class Equal : BinaryOperator
@@ -7,5 +8,16 @@ internal class Equal : BinaryOperator
     {
     }
 
-    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter) => firstParameter == secondParameter;
+    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter)
+    {
+        try
+        {
+            return firstParameter == secondParameter;
+
+        }
+        catch (RuntimeBinderException)
+        {
+            return firstParameter.ToString() == secondParameter.ToString();
+        }
+    }
 }

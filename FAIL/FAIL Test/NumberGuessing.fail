@@ -1,0 +1,17 @@
+﻿var solution = 42;
+var tries = 0;
+var run = true;
+
+while (true) {
+	tries = tries + 1;
+	var guess = input("Guess a number: ");
+
+	if (solution == guess) {
+		log("You won!");
+		log("You needed a total of " + tries + " tries to guess the right number.");
+		run = false;
+	}
+	else {
+		log("This is not the right number!");
+	}
+}

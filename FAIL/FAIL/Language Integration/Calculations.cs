@@ -5,4 +5,5 @@ internal enum Calculations
     Term = 1,
     DotCalculations = 2,
     StrokeCalculations = 4,
+    TestOperations = 8,
 }

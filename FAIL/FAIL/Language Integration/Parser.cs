@@ -68,38 +68,19 @@ internal class Parser
 
     protected Element_Tree.DataTypes.Object? ParseObject() => new(CurrentToken);
 
-    protected AST? ParseStrokeCalculation(Scope scope, AST? heap)
+    protected AST? ParseTerm(Scope scope, Calculations calculations = (Calculations)15, AST? heap = null)
     {
-        if (IsEOT() || !IsTypeOf(TokenType.StrokeCalculation)) return heap;
+        if (calculations.HasFlag(Calculations.Term)) heap = ParseTerm(scope, heap);
+        if (calculations.HasFlag(Calculations.DotCalculations)) heap = ParseDotCalculation(scope, heap);
+        if (calculations.HasFlag(Calculations.StrokeCalculations)) heap = ParseStrokeCalculation(scope, heap);
+        if (calculations.HasFlag(Calculations.TestOperations)) heap = ParseTestOperations(scope, heap);
 
-        var token = CurrentToken;
-        AcceptAny();
-        var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
-
-        return HasValue(token, "+")
-            ? ParseTerm(scope, Calculations.StrokeCalculations, new Addition(heap, secondParameter, token))
-            : ParseTerm(scope, Calculations.StrokeCalculations, new Substraction(heap, secondParameter, token));
-    }
-    protected AST? ParseDotCalculation(Scope scope, AST? heap)
-    {
-        if (IsEOT()) return heap;
-
-        var token = CurrentToken;
-
-        if (HasValue(token, "*"))
-        {
-            AcceptAny();
-            return ParseTerm(scope, Calculations.DotCalculations, new Multiplication(heap, ParseTerm(scope, Calculations.Term), token));
-        }
-        else if (HasValue(token, "/"))
-        {
-            AcceptAny();
-            return ParseTerm(scope, Calculations.DotCalculations, new Division(heap, ParseTerm(scope, Calculations.Term), token));
-        }
-        else return heap;
+        return heap;
     }
     protected AST? ParseTerm(Scope scope, AST? heap)
     {
+        var token = CurrentToken;
+
         if (IsTypeOf(TokenType.OpeningParenthese))
         {
             AcceptAny();
@@ -110,7 +91,7 @@ internal class Parser
                 AcceptAny();
                 subTerm = ParseTerm(scope,
                                     Calculations.DotCalculations | Calculations.StrokeCalculations,
-                                    new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "None")),
+                                    new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "[generated token]")),
                                                      ParseTerm(scope, Calculations.Term)));
             }
             else subTerm = ParseTerm(scope);
@@ -118,54 +99,85 @@ internal class Parser
             Accept(TokenType.ClosingParenthese);
             return subTerm;
         }
+
         if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
         {
             AcceptAny();
+
             return ParseTerm(scope,
                              Calculations.DotCalculations | Calculations.StrokeCalculations,
                              new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "None")),
                                               ParseTerm(scope, Calculations.Term)));
         }
 
-        if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String))
+        if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String) || IsTypeOf(TokenType.Boolean))
         {
-            var token = CurrentToken;
             AcceptAny();
+
             return new Element_Tree.DataTypes.Object(token);
         }
 
         if (IsTypeOf(TokenType.Identifier))
         {
-            var token = CurrentToken;
             AcceptAny();
 
             if (IsTypeOf(TokenType.Assignment)) return ParseAssignment(scope, token!.Value);
-
-            if (IsTypeOf(TokenType.OpeningParenthese))
-            {
-                Accept(TokenType.OpeningParenthese);
-                var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
-                return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters);
-            }
-
+            if (IsTypeOf(TokenType.OpeningParenthese)) return ParseFunctionCall(scope, token);
             return new Reference(scope, token);
         }
 
-        if (IsTypeOf(TokenType.Boolean))
-        {
-            var token = CurrentToken;
-            AcceptAny();
-            return new Element_Tree.DataTypes.Object(token);
-        }
-
-        throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value);
+        return heap;
     }
-    protected AST? ParseTerm(Scope scope, Calculations calculations = (Calculations)7, AST? heap = null)
+    protected AST? ParseDotCalculation(Scope scope, AST? heap)
     {
-        if (calculations.HasFlag(Calculations.Term)) heap = ParseTerm(scope, heap);
-        if (calculations.HasFlag(Calculations.DotCalculations)) heap = ParseDotCalculation(scope, heap);
-        if (calculations.HasFlag(Calculations.StrokeCalculations)) heap = ParseStrokeCalculation(scope, heap);
+        if (IsEOT() || !IsTypeOf(TokenType.DotCalculation)) return heap;
 
+        var token = CurrentToken;
+
+        if (HasValue(token, "*")) 
+        {
+            AcceptAny();
+            var secondParameter = ParseTerm(scope, Calculations.Term);
+            return ParseTerm(scope, Calculations.DotCalculations, new Multiplication(heap, secondParameter, token));
+        }
+        if (HasValue(token, "/")) 
+        {
+            AcceptAny();
+            var secondParameter = ParseTerm(scope, Calculations.Term);
+            return ParseTerm(scope, Calculations.DotCalculations, new Division(heap, secondParameter, token));
+        }
+        return heap;
+    }
+    protected AST? ParseStrokeCalculation(Scope scope, AST? heap)
+    {
+        if (IsEOT() || !IsTypeOf(TokenType.StrokeCalculation)) return heap;
+
+        var token = CurrentToken;
+
+        if (HasValue(token, "+"))
+        {
+            AcceptAny();
+            var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
+            return ParseTerm(scope, Calculations.StrokeCalculations, new Addition(heap, secondParameter, token));
+        }
+        if (HasValue(token, "-"))
+        {
+            AcceptAny();
+            var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
+            return ParseTerm(scope, Calculations.StrokeCalculations, new Substraction(heap, secondParameter, token));
+        }
+        return heap;
+    }
+    protected AST? ParseTestOperations(Scope scope, AST? heap)
+    {
+        if (IsEOT() || !IsTypeOf(TokenType.TestOperator)) return heap;
+
+        var token = CurrentToken;
+        AcceptAny();
+
+        var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
+
+        if (HasValue(token, "==")) return ParseTerm(scope, Calculations.TestOperations, new Equality(heap, secondParameter, token));
         return heap;
     }
 
@@ -213,7 +225,7 @@ internal class Parser
 
         return new Function(identifier!.Value.Value, returnType!.Value.Value.ToString(), argList, cmdList, identifier);
     }
-    protected AST? ParseAssignment(Scope scope, Token token)
+    protected AST ParseAssignment(Scope scope, Token token)
     {
         Accept(TokenType.Assignment);
 
@@ -221,6 +233,12 @@ internal class Parser
         if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
 
         return new Assignment(GetVariableFromScope(scope, token.Value), ParseTerm(scope));
+    }
+    private AST ParseFunctionCall(Scope scope, Token? token)
+    {
+        Accept(TokenType.OpeningParenthese);
+        var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
+        return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters);
     }
     protected AST? ParseReturn(Scope scope)
     {

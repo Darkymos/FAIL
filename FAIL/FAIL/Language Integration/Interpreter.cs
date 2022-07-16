@@ -1,7 +1,7 @@
-﻿using FAIL.Element_Tree;
+﻿using FAIL.ElementTree;
 using System.Text;
 
-namespace FAIL.Language_Integration;
+namespace FAIL.LanguageIntegration;
 internal class Interpreter
 {
     private readonly string[] FileNames;

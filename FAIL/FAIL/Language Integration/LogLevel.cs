@@ -1,4 +1,4 @@
-﻿namespace FAIL.Language_Integration;
+﻿namespace FAIL.LanguageIntegration;
 internal enum LogLevel
 {
     Info,

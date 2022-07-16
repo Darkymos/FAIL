@@ -1,7 +1,7 @@
 ﻿using FAIL.Exceptions;
-using FAIL.Language_Integration;
+using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree;
+namespace FAIL.ElementTree;
 internal class Return : AST
 {
     public AST? ReturnValue { get; }

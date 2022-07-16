@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 [assembly: InternalsVisibleTo("FAIL Test")]
-namespace FAIL.Language_Integration;
+namespace FAIL.LanguageIntegration;
 
 internal record struct Token(TokenType Type, dynamic Value, uint Row, uint Column, string FileName);
 
@@ -47,6 +47,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "return", KeyWord.Return },
         { "if", KeyWord.If },
         { "else", KeyWord.Else },
+        { "while", KeyWord.While },
     };
 
     private uint Row = 1;

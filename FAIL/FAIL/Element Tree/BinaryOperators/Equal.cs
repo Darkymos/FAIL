@@ -1,6 +1,6 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree.BinaryOperators;
+namespace FAIL.ElementTree.BinaryOperators;
 internal class Equal : BinaryOperator
 {
     public Equal(AST? firstParameter, AST? secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)

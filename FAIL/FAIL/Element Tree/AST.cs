@@ -1,6 +1,6 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree;
+namespace FAIL.ElementTree;
 internal abstract class AST
 {
     public Token? Token { get; init; }

@@ -1,4 +1,4 @@
-﻿namespace FAIL.Language_Integration;
+﻿namespace FAIL.LanguageIntegration;
 [Flags]
 internal enum Calculations
 {

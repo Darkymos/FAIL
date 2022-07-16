@@ -53,9 +53,11 @@ var test = "Hello World!";
 log(test);
 var anotherTest = test + 42;
 log(anotherTest);
+anotherTest = anotherTest + 1;
+log(anotherTest);
 test = 42;
 log(test);
-//log(test = "test"); // assignment not working!
+//log(test = "test"); not working!
 //var test = 42; already assigned!
 
 // function tests
@@ -128,6 +130,13 @@ else if (42 == 42) {
 }
 else {
 	log("unreachable code");
+}
+
+// while
+var i = 0;
+while (i < 10) {
+	log(i);
+	i = i + 1;
 }
 
 // end of program

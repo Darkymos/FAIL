@@ -1,7 +1,7 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 using static System.FormattableString;
 
-namespace FAIL.Element_Tree;
+namespace FAIL.ElementTree;
 internal class Log : AST
 {
     private AST? Command { get; init; }

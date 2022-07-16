@@ -1,6 +1,6 @@
 ﻿using static System.FormattableString;
 
-namespace FAIL.Language_Integration;
+namespace FAIL.LanguageIntegration;
 internal class Logger : IDisposable
 {
     private bool disposedValue;

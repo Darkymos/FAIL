@@ -1,6 +1,6 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree.BinaryOperators;
+namespace FAIL.ElementTree.BinaryOperators;
 internal class Multiplication : BinaryOperator
 {
     public Multiplication(AST? firstParameter, AST? secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)

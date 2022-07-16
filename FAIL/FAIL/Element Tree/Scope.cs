@@ -1,4 +1,4 @@
-﻿namespace FAIL.Element_Tree;
+﻿namespace FAIL.ElementTree;
 internal class Scope
 {
     public List<AST> Entries { get; }

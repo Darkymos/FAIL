@@ -1,4 +1,4 @@
-﻿namespace FAIL.Language_Integration;
+﻿namespace FAIL.LanguageIntegration;
 internal enum KeyWord
 {
     Log,
@@ -8,4 +8,5 @@ internal enum KeyWord
     Return,
     If,
     Else,
+    While,
 }

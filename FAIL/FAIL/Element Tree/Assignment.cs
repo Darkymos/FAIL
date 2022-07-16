@@ -1,6 +1,6 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree;
+namespace FAIL.ElementTree;
 internal class Assignment : AST
 {
     public Variable AssignTo { get; init; }
@@ -16,7 +16,7 @@ internal class Assignment : AST
 
     public override dynamic? Call()
     {
-        AssignTo.Reassign(Value);
+        AssignTo.Reassign(new DataTypes.Object(Value.Call()));
         return null;
     }
 }

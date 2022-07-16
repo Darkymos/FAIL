@@ -1,8 +1,8 @@
-﻿using FAIL.Element_Tree;
-using FAIL.Element_Tree.BinaryOperators;
+﻿using FAIL.ElementTree;
+using FAIL.ElementTree.BinaryOperators;
 using FAIL.Exceptions;
 
-namespace FAIL.Language_Integration;
+namespace FAIL.LanguageIntegration;
 internal class Parser
 {
     public Tokenizer Tokenizer { get; }
@@ -74,6 +74,7 @@ internal class Parser
             KeyWord.Object => ParseFunction(scope, out endOfStatementSignRequired),
             KeyWord.Return => ParseReturn(scope),
             KeyWord.If => ParseIf(scope, out endOfStatementSignRequired),
+            KeyWord.While => ParseWhile(scope, out endOfStatementSignRequired),
             _ => throw new NotImplementedException(),
         };
         else result = ParseTerm(scope);
@@ -87,7 +88,7 @@ internal class Parser
         return result;
     }
 
-    protected Element_Tree.DataTypes.Object? ParseObject() => new(CurrentToken);
+    protected ElementTree.DataTypes.Object? ParseObject() => new(CurrentToken!.Value.Value, CurrentToken);
 
     protected AST? ParseTerm(Scope scope, Calculations calculations = (Calculations)15, AST? heap = null)
     {
@@ -112,7 +113,7 @@ internal class Parser
                 AcceptAny();
                 subTerm = ParseTerm(scope,
                                     Calculations.DotCalculations | Calculations.StrokeCalculations,
-                                    new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "[generated token]")),
+                                    new Substraction(new ElementTree.DataTypes.Object(0),
                                                      ParseTerm(scope, Calculations.Term)));
             }
             else subTerm = ParseTerm(scope);
@@ -127,7 +128,7 @@ internal class Parser
 
             return ParseTerm(scope,
                              Calculations.DotCalculations | Calculations.StrokeCalculations,
-                             new Substraction(new Element_Tree.DataTypes.Object(new(TokenType.Number, 0, 0, 0, "None")),
+                             new Substraction(new ElementTree.DataTypes.Object(0),
                                               ParseTerm(scope, Calculations.Term)));
         }
 
@@ -135,7 +136,7 @@ internal class Parser
         {
             AcceptAny();
 
-            return new Element_Tree.DataTypes.Object(token);
+            return new ElementTree.DataTypes.Object(token!.Value.Value, token);
         }
 
         if (IsTypeOf(TokenType.Identifier))
@@ -249,7 +250,7 @@ internal class Parser
         if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
         if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
 
-        return new Assignment(GetVariableFromScope(scope, token.Value), ParseTerm(scope));
+        return new Assignment(GetVariableFromScope(scope, token.Value), ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false));
     }
     protected AST ParseFunctionCall(Scope scope, Token? token)
     {
@@ -290,6 +291,21 @@ internal class Parser
         }
 
         return new If(testCommand!, ifBody, null, token);
+    }
+    protected AST ParseWhile(Scope scope, out bool endOfStatementSignRequiredVariable)
+    {
+        endOfStatementSignRequiredVariable = false;
+
+        var token = CurrentToken;
+        AcceptAny();
+
+        Accept(TokenType.OpeningParenthese);
+        var testCommand = ParseCommand(scope, TokenType.ClosingParenthese);
+
+        Accept(TokenType.OpeningBracket);
+        var body = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope);
+
+        return new While(testCommand!, body, token);
     }
 
 

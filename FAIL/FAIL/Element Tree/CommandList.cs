@@ -1,6 +1,6 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree;
+namespace FAIL.ElementTree;
 internal class CommandList : AST
 {
     public Scope Commands { get; init; }        

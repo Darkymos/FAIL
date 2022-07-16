@@ -1,6 +1,6 @@
 ﻿using FAIL.Exceptions;
 
-namespace FAIL.Language_Integration;
+namespace FAIL.LanguageIntegration;
 internal static class ExceptionCreator
 {
     public static SyntaxException UnexpectedToken(Token token)

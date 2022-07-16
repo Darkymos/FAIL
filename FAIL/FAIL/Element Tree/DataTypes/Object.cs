@@ -1,12 +1,14 @@
-﻿using FAIL.Language_Integration;
+﻿using FAIL.LanguageIntegration;
 
-namespace FAIL.Element_Tree.DataTypes;
+namespace FAIL.ElementTree.DataTypes;
 internal class Object : AST
 {
-    public Object(Token? token = null) : base(token)
-    {
-    }
+    public dynamic Value { get; }
 
-    public override dynamic? Call() => Token?.Value;
+
+    public Object(dynamic value, Token? token = null) : base(token) => Value = value;
+
+
+    public override dynamic? Call() => Value;
     public override string ToString() => $"{nameof(Object)}";
 }

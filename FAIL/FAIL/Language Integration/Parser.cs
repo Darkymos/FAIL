@@ -1,5 +1,5 @@
 ﻿using FAIL.Element_Tree;
-using FAIL.Element_Tree.Operators;
+using FAIL.Element_Tree.BinaryOperators;
 using FAIL.Exceptions;
 
 namespace FAIL.Language_Integration;
@@ -22,8 +22,12 @@ internal class Parser
     };
     private static readonly Dictionary<string, Type> TestOperatorMapper = new()
     {
-        { "==", typeof(Equality) },
-        { "!=", typeof(NotEquality) },
+        { "==", typeof(Equal) },
+        { "!=", typeof(NotEqual) },
+        { ">=", typeof(GreaterThanOrEqual) },
+        { "<=", typeof(LessThanOrEqual) },
+        { ">", typeof(GreaterThan) },
+        { "<", typeof(LessThan) },
     };
 
 

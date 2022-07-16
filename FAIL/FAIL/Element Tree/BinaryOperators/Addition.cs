@@ -1,6 +1,6 @@
 ﻿using FAIL.Language_Integration;
 
-namespace FAIL.Element_Tree.Operators;
+namespace FAIL.Element_Tree.BinaryOperators;
 internal class Addition : BinaryOperator
 {
     public Addition(AST? firstParameter, AST? secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)

@@ -16,6 +16,10 @@ internal class Tokenizer : IEnumerable<Token>
         // Testing
         { "==", TokenType.TestOperator },
         { "!=", TokenType.TestOperator },
+        { ">=", TokenType.TestOperator },
+        { "<=", TokenType.TestOperator },
+        { ">", TokenType.TestOperator },
+        { "<", TokenType.TestOperator },
 
         // Delimiters
         { "(", TokenType.OpeningParenthese },

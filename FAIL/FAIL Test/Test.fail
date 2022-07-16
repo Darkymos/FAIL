@@ -103,5 +103,9 @@ log(1 == 10 - 9);
 log(6 + 1 == 2 * 3 + 1);
 log(true != false);
 log(test != test);
+log(2 >= 1);
+log(1 <= 0);
+log(42 > 1);
+log(42 < 1337);
 
 // end of program

@@ -140,12 +140,14 @@ internal class Parser
             var secondParameter = ParseTerm(scope, Calculations.Term);
             return ParseTerm(scope, Calculations.DotCalculations, new Multiplication(heap, secondParameter, token));
         }
+
         if (HasValue(token, "/")) 
         {
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.Term);
             return ParseTerm(scope, Calculations.DotCalculations, new Division(heap, secondParameter, token));
         }
+
         return heap;
     }
     protected AST? ParseStrokeCalculation(Scope scope, AST? heap)
@@ -160,12 +162,14 @@ internal class Parser
             var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
             return ParseTerm(scope, Calculations.StrokeCalculations, new Addition(heap, secondParameter, token));
         }
+
         if (HasValue(token, "-"))
         {
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.Term | Calculations.DotCalculations);
             return ParseTerm(scope, Calculations.StrokeCalculations, new Substraction(heap, secondParameter, token));
         }
+
         return heap;
     }
     protected AST? ParseTestOperations(Scope scope, AST? heap)
@@ -173,11 +177,21 @@ internal class Parser
         if (IsEOT() || !IsTypeOf(TokenType.TestOperator)) return heap;
 
         var token = CurrentToken;
-        AcceptAny();
 
-        var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
+        if (HasValue(token, "=="))
+        {
+            AcceptAny();
+            var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
+            return ParseTerm(scope, Calculations.TestOperations, new Equality(heap, secondParameter, token));
+        }
 
-        if (HasValue(token, "==")) return ParseTerm(scope, Calculations.TestOperations, new Equality(heap, secondParameter, token));
+        if (HasValue(token, "!="))
+        {
+            AcceptAny();
+            var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
+            return ParseTerm(scope, Calculations.TestOperations, new NotEquality(heap, secondParameter, token));
+        }
+
         return heap;
     }
 

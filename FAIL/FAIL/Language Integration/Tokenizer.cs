@@ -13,15 +13,23 @@ internal class Tokenizer : IEnumerable<Token>
     public string FileName { get; }
     public static Dictionary<string, TokenType> Operators { get; } = new()
     {
+        // Testing
         { "==", TokenType.TestOperator },
+        { "!=", TokenType.TestOperator },
+
+        // Delimiters
         { "(", TokenType.OpeningParenthese },
         { ")", TokenType.ClosingParenthese },
         { "{", TokenType.OpeningBracket },
         { "}", TokenType.ClosingBracket },
+
+        // Mathematical operators
         { "+", TokenType.StrokeCalculation },
         { "-", TokenType.StrokeCalculation },
         { "*", TokenType.DotCalculation },
         { "/", TokenType.DotCalculation },
+
+        // Annotation Signs
         { ",", TokenType.Separator },
         { ";", TokenType.EndOfStatement },
         { "=", TokenType.Assignment },

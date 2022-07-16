@@ -100,5 +100,7 @@ log(true == false);
 log(1 == 1);
 log("h" == "s");
 log(1 == 10 - 9);
+log(true != false);
+log(test != test);
 
 // end of program

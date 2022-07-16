@@ -4,7 +4,7 @@ using static System.FormattableString;
 namespace FAIL.ElementTree;
 internal class Log : AST
 {
-    private AST? Command { get; init; }
+    public AST? Command { get; }
 
 
     public Log(AST? command, Token? token = null) : base(token) => Command = command;

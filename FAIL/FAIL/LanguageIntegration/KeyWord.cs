@@ -9,4 +9,5 @@ internal enum KeyWord
     If,
     Else,
     While,
+    Input,
 }

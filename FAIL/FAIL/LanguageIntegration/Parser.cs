@@ -69,6 +69,7 @@ internal class Parser
         if (IsTypeOf(TokenType.KeyWord)) result = (KeyWord)CurrentToken!.Value.Value switch
         {
             KeyWord.Log => ParseLog(scope),
+            KeyWord.Input => ParseInput(scope),
             KeyWord.Var => ParseVar(scope),
             KeyWord.Void => ParseFunction(scope, out endOfStatementSignRequired),
             KeyWord.Object => ParseFunction(scope, out endOfStatementSignRequired),
@@ -199,7 +200,7 @@ internal class Parser
         return heap;
     }
 
-    protected AST? ParseLog(Scope scope)
+    protected AST ParseLog(Scope scope)
     {
         var logToken = CurrentToken;
 
@@ -207,6 +208,15 @@ internal class Parser
         Accept(TokenType.OpeningParenthese);
 
         return new Log(ParseCommand(scope, TokenType.ClosingParenthese), logToken);
+    }
+    protected AST ParseInput(Scope scope)
+    {
+        var inputToken = CurrentToken;
+
+        AcceptAny();
+        Accept(TokenType.OpeningParenthese);
+
+        return new Input(ParseCommand(scope, TokenType.ClosingParenthese)!, inputToken);
     }
     protected AST? ParseVar(Scope scope)
     {

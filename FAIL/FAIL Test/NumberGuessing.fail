@@ -1,6 +1,5 @@
 ﻿var solution = 42;
 var tries = 0;
-var run = true;
 
 while (true) {
 	tries = tries + 1;
@@ -9,7 +8,10 @@ while (true) {
 	if (solution == guess) {
 		log("You won!");
 		log("You needed a total of " + tries + " tries to guess the right number.");
-		run = false;
+		break;
+	}
+	else if (guess == "") {
+		continue;
 	}
 	else {
 		log("This is not the right number!");

@@ -73,9 +73,11 @@ internal class Parser
             KeyWord.Var => ParseVar(scope),
             KeyWord.Void => ParseFunction(scope, out endOfStatementSignRequired),
             KeyWord.Object => ParseFunction(scope, out endOfStatementSignRequired),
-            KeyWord.Return => ParseReturn(scope),
+            KeyWord.Return => ParseReturn(scope, endOfStatementSign),
             KeyWord.If => ParseIf(scope, out endOfStatementSignRequired),
             KeyWord.While => ParseWhile(scope, out endOfStatementSignRequired),
+            KeyWord.Break => ParseBreak(scope, endOfStatementSign),
+            KeyWord.Continue => ParseContinue(scope, endOfStatementSign),
             _ => throw new NotImplementedException(),
         };
         else result = ParseTerm(scope);
@@ -268,11 +270,11 @@ internal class Parser
         var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
         return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters);
     }
-    protected AST? ParseReturn(Scope scope)
+    protected AST? ParseReturn(Scope scope, TokenType endOfStatementSign)
     {
         var returnToken = CurrentToken;
         AcceptAny();
-        return new Return(ParseCommand(scope, TokenType.EndOfStatement), returnToken);
+        return new Return(ParseCommand(scope, endOfStatementSign), returnToken);
     }
     protected AST ParseIf(Scope scope, out bool endOfStatementSignRequiredVariable)
     {
@@ -316,6 +318,20 @@ internal class Parser
         var body = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope);
 
         return new While(testCommand!, body, token);
+    }
+    protected AST ParseBreak(Scope scope, TokenType endOfStatementSign)
+    {
+        var token = CurrentToken;
+        AcceptAny();
+
+        return new Break(token);
+    }
+    protected AST ParseContinue(Scope scope, TokenType endOfStatementSign)
+    {
+        var token = CurrentToken;
+        AcceptAny();
+
+        return new Continue(token);
     }
 
 

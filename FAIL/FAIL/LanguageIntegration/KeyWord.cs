@@ -10,4 +10,6 @@ internal enum KeyWord
     Else,
     While,
     Input,
+    Break,
+    Continue,
 }

@@ -1,4 +1,5 @@
-﻿using FAIL.LanguageIntegration;
+﻿using FAIL.Exceptions;
+using FAIL.LanguageIntegration;
 
 namespace FAIL.ElementTree;
 internal class While : AST
@@ -16,7 +17,14 @@ internal class While : AST
 
     public override dynamic? Call()
     {
-        while (TestCommand.Call()) Body.Call();
-        return null;
+        try
+        {
+            while (TestCommand.Call()) 
+                try { Body.Call(); }
+                catch (ContinueException) { continue; }
+
+            return null;
+        }
+        catch (BreakException) { return null; }
     }
 }

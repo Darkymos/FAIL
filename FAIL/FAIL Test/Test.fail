@@ -1,4 +1,4 @@
-﻿// simple integer stroke calculations
+﻿log("simple integer stroke calculations ------------------------------------");
 log(45 + 3);
 log(90 - 4);
 log(100 - 10 + 5);
@@ -6,23 +6,23 @@ log(100 + 10 - 5);
 log(-10);
 log(-10 + 5);
 
-// simple integer dot calculations
+log("simple integer dot calculations ---------------------------------------");
 log(87 * 9);
 log(90 / 10);
 log(90 / 11);
 log(90 * 10 / 20);
 log(100 / 20 * 13);
 
-// simple integer mixed calculation (dot before stroke)
+log("simple integer mixed calculation (dot before stroke) ------------------");
 log(90 / 10 + 1);
 
-// simple double calculations
+log("simple double calculations --------------------------------------------");
 log(9.5 + 8.7);
 log(7.1 - 0.1);
 log(0.5 * 3.5);
 log(1.5 / 0.5);
 
-// simple mixed double and integer calculations
+log("simple mixed double and integer calculations --------------------------");
 log(9 + 1.5);
 log(8 - 0.5);
 log(10 * 0.5);
@@ -34,21 +34,21 @@ log(0.5 / 5);
 log(10.0 * 2);
 log(10. * 2);
 
-// test for dot before stroke with parentheses
+log("test for dot before stroke with parentheses ---------------------------");
 log((1 + 4) * 10);
 
-// string tests
+log("strings ---------------------------------------------------------------");
 log("Hello World!");
 log("Hello " + "World!");
 log("Hello World!" + 3); // test comment
 
-// string interpolation test
+log("string interpolations -------------------------------------------------");
 log("10 + 5 is " + (10 + 5));
 
-// space between identifier and parenthese
+log("space between identifier and parenthese -------------------------------");
 log ("test123");
 
-// variable tests
+log("variables -------------------------------------------------------------");
 var test = "Hello World!";
 log(test);
 var anotherTest = test + 42;
@@ -60,7 +60,7 @@ log(test);
 //log(test = "test"); not working!
 //var test = 42; already assigned!
 
-// function tests
+log("functions -------------------------------------------------------------");
 void TestFunction() {
 	var local = "test";
 	log(test); // variable from outer scope
@@ -74,7 +74,7 @@ TestFunction();
 //void test() { already assigned!
 //}
 
-// functions with parameters
+log("functions with parameters ---------------------------------------------");
 void Log(var value) {
 	log("Call to 'Log'");
 	log(value);
@@ -83,7 +83,7 @@ Log("test");
 Log(42);
 //Log(42, "test"); wrong argument count!
 
-// functions with return value
+log("functions with return value -------------------------------------------");
 object Add(var a, var b) {
 	return a + b;
 }
@@ -94,7 +94,7 @@ log(Add(10, 5));
 // test for call in other file (will be improved in the future)
 //log(Substract(10, 5));
 
-// booleans
+log("booleans --------------------------------------------------------------");
 log(true);
 log(false);
 log(true == true);
@@ -110,7 +110,7 @@ log(1 <= 0);
 log(42 > 1);
 log(42 < 1337);
 
-// if
+log("if --------------------------------------------------------------------");
 if (test == test) {
 	log("in if");
 }
@@ -132,15 +132,47 @@ else {
 	log("unreachable code");
 }
 
-// while
+log("while -----------------------------------------------------------------");
 var i = 0;
 while (i < 10) {
 	log(i);
-	i = i + 1;
+	i += 1;
+	if (i == 5) {
+		continue;
+	}
+	log("again :)");
+}
+i = 0;
+while (i < 10) {
+	log("i is " + i);
+	i += 1;
+	if (i == 5) {
+		break;
+	}
 }
 
-// input
+log("self assignments ------------------------------------------------------");
+var dummy = 0;
+log(dummy);
+dummy += 3;
+log(dummy);
+dummy -= 1;
+log(dummy);
+dummy *= 5;
+log(dummy);
+dummy /= 2;
+log(dummy);
+
+log("input -----------------------------------------------------------------");
 log(input());
 log(input("Guess a number: "));
+
+log("incremental operators -------------------------------------------------");
+var inc = 0;
+log(inc);
+inc++;
+log(inc);
+inc--;
+log(inc);
 
 // end of program

@@ -21,22 +21,32 @@ internal class Tokenizer : IEnumerable<Token>
         { ">", TokenType.TestOperator },
         { "<", TokenType.TestOperator },
 
+        // Self Assignments
+        { "+=", TokenType.SelfAssignment },
+        { "-=", TokenType.SelfAssignment },
+        { "*=", TokenType.SelfAssignment },
+        { "/=", TokenType.SelfAssignment },
+
+        // Incremental Operators
+        { "++", TokenType.IncrementalOperator },
+        { "--", TokenType.IncrementalOperator },
+
+        // Annotation Signs
+        { ",", TokenType.Separator },
+        { ";", TokenType.EndOfStatement },
+        { "=", TokenType.Assignment },
+
         // Delimiters
         { "(", TokenType.OpeningParenthese },
         { ")", TokenType.ClosingParenthese },
         { "{", TokenType.OpeningBracket },
         { "}", TokenType.ClosingBracket },
 
-        // Mathematical operators
+        // Mathematical Operators
         { "+", TokenType.StrokeCalculation },
         { "-", TokenType.StrokeCalculation },
         { "*", TokenType.DotCalculation },
         { "/", TokenType.DotCalculation },
-
-        // Annotation Signs
-        { ",", TokenType.Separator },
-        { ";", TokenType.EndOfStatement },
-        { "=", TokenType.Assignment },
     };
     public static Dictionary<string, KeyWord> KeyWords { get; } = new()
     {

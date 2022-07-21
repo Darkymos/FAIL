@@ -19,4 +19,6 @@ internal enum TokenType
     Separator,
     Boolean,
     TestOperator,
+    SelfAssignment,
+    IncrementalOperator,
 }

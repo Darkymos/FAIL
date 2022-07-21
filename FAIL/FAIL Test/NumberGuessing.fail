@@ -2,16 +2,13 @@
 var tries = 0;
 
 while (true) {
-	tries = tries + 1;
+	tries++;
 	var guess = input("Guess a number: ");
 
 	if (solution == guess) {
 		log("You won!");
 		log("You needed a total of " + tries + " tries to guess the right number.");
 		break;
-	}
-	else if (guess == "") {
-		continue;
 	}
 	else {
 		log("This is not the right number!");

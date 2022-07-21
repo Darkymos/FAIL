@@ -29,6 +29,18 @@ internal class Parser
         { ">", typeof(GreaterThan) },
         { "<", typeof(LessThan) },
     };
+    private static readonly Dictionary<string, Type> SelfAssignmentOperatorMapper = new()
+    {
+        { "+=", typeof(Addition) },
+        { "-=", typeof(Substraction) },
+        { "*=", typeof(Multiplication) },
+        { "/=", typeof(Division) },
+    };
+    private static readonly Dictionary<string, Type> IncrementalOperatorMapper = new()
+    {
+        { "++", typeof(Addition) },
+        { "--", typeof(Substraction) },
+    };
 
 
     public Parser(string file, string fileName)
@@ -147,7 +159,9 @@ internal class Parser
             AcceptAny();
 
             if (IsTypeOf(TokenType.Assignment)) return ParseAssignment(scope, token!.Value);
+            if (IsTypeOf(TokenType.SelfAssignment)) return ParseSelfAssignment(scope, token!.Value);
             if (IsTypeOf(TokenType.OpeningParenthese)) return ParseFunctionCall(scope, token);
+            if (IsTypeOf(TokenType.IncrementalOperator)) return ParseIncrementalOperator(scope, token!.Value);
             return new Reference(scope, token);
         }
 
@@ -264,11 +278,39 @@ internal class Parser
 
         return new Assignment(GetVariableFromScope(scope, token.Value), ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false));
     }
+    protected AST ParseSelfAssignment(Scope scope, Token token)
+    {
+        var op = CurrentToken;
+        Accept(TokenType.SelfAssignment);
+
+        if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
+        if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
+
+        return new Assignment(GetVariableFromScope(scope, token.Value),
+                              Activator.CreateInstance(SelfAssignmentOperatorMapper[GetValue(op)],
+                                                       GetVariableFromScope(scope, token.Value),
+                                                       ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false),
+                                                       token));
+    }
     protected AST ParseFunctionCall(Scope scope, Token? token)
     {
         Accept(TokenType.OpeningParenthese);
         var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
         return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters);
+    }
+    protected AST ParseIncrementalOperator(Scope scope, Token token)
+    {
+        var op = CurrentToken;
+        AcceptAny();
+
+        if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
+        if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
+
+        return new Assignment(GetVariableFromScope(scope, token.Value),
+                              Activator.CreateInstance(IncrementalOperatorMapper[GetValue(op)],
+                                                       GetVariableFromScope(scope, token.Value),
+                                                       new ElementTree.DataTypes.Object(1),
+                                                       token));
     }
     protected AST? ParseReturn(Scope scope, TokenType endOfStatementSign)
     {

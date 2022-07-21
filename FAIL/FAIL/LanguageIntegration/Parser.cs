@@ -272,23 +272,17 @@ internal class Parser
     protected AST ParseAssignment(Scope scope, Token token)
     {
         Accept(TokenType.Assignment);
-
-        if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
-        if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
-
-        return new Assignment(GetVariableFromScope(scope, token.Value), ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false));
+        return new Assignment(GetValidVariable(scope, token.Value), ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false));
     }
     protected AST ParseSelfAssignment(Scope scope, Token token)
     {
         var op = CurrentToken;
         Accept(TokenType.SelfAssignment);
 
-        if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
-        if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
-
-        return new Assignment(GetVariableFromScope(scope, token.Value),
+        var variable = GetValidVariable(scope, token.Value);
+        return new Assignment(variable,
                               Activator.CreateInstance(SelfAssignmentOperatorMapper[GetValue(op)],
-                                                       GetVariableFromScope(scope, token.Value),
+                                                       variable,
                                                        ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false),
                                                        token));
     }
@@ -303,12 +297,10 @@ internal class Parser
         var op = CurrentToken;
         AcceptAny();
 
-        if (!IsAssigned(scope, token.Value)) throw ExceptionCreator.NotAssignedInScope(CurrentToken!.Value.Value);
-        if (GetVariableFromScope(scope, token.Value) is null) throw ExceptionCreator.VariableExpected();
-
-        return new Assignment(GetVariableFromScope(scope, token.Value),
+        var variable = GetValidVariable(scope, token.Value);
+        return new Assignment(variable,
                               Activator.CreateInstance(IncrementalOperatorMapper[GetValue(op)],
-                                                       GetVariableFromScope(scope, token.Value),
+                                                       variable,
                                                        new ElementTree.DataTypes.Object(1),
                                                        token));
     }
@@ -390,10 +382,17 @@ internal class Parser
         if (GetFunctionFromScope(scope, name) is not null) return true;
         return false;
     }
-    public static Variable? GetVariableFromScope(Scope scope, string name)
+    private static Variable? GetVariableFromScope(Scope scope, string name)
         => scope.Search(x => x is Variable variable && variable.Name == name) as Variable;
     public static Function? GetFunctionFromScope(Scope scope, string name)
         => scope.Search(x => x is Function function && function.Name == name) as Function;
+    public static Variable GetValidVariable(Scope scope, string name)
+    {
+        if (!IsAssigned(scope, name)) throw ExceptionCreator.NotAssignedInScope(name);
+
+        var variable = GetVariableFromScope(scope, name);
+        return variable is null ? throw ExceptionCreator.VariableExpected() : variable;
+    }
 
     private Token? AcceptAny()
     {

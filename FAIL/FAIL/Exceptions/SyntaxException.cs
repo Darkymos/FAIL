@@ -1,10 +1,7 @@
 ﻿namespace FAIL.Exceptions;
-internal class SyntaxException : Exception
+internal class SyntaxException : FAILException
 {
-    public string FileName = "";
-
-
-    public SyntaxException(string message) : base(message) { }
-    public SyntaxException(string message, string fileName) : base(message) 
-        => FileName = fileName;
+    public SyntaxException(string message, uint line, uint column, string file) : base(message, line, column, file)
+    {
+    }
 }

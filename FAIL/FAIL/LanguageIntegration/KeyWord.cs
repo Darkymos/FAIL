@@ -12,4 +12,5 @@ internal enum KeyWord
     Input,
     Break,
     Continue,
+    For,
 }

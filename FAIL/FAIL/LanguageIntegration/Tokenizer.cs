@@ -61,6 +61,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "while", KeyWord.While },
         { "break", KeyWord.Break },
         { "continue", KeyWord.Continue },
+        { "for", KeyWord.For },
     };
 
     private uint Row = 1;

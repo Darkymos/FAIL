@@ -29,7 +29,7 @@ internal class FunctionCall : AST
         var given = Parameters.Commands.Entries;
 
         if (given.Count != expected.Count)
-            throw ExceptionCreator.WrongParameterCount(expected.Count, given.Count, Function.Name);
+            throw ExceptionCreator.WrongParameterCount(expected.Count, given.Count, Function.Name, Token!.Value);
 
         // check for datatype
         /*for (var i = 0; i < expected.Count; i++)

@@ -119,7 +119,8 @@ if (test != test) {
 }
 if (test != test) {
 	log("unreachable code");
-} else {
+} 
+else {
 	log("in else");
 }
 if (42 == 1337) {
@@ -179,5 +180,9 @@ log("for -------------------------------------------------------------------");
 for (var i = 0; i < 10; i++) {
 	log(i);
 }
+
+log("body-less instructions ------------------------------------------------");
+if (inc == 0) log("inc is 0");
+//void BodyLessFunction() log("body-less function"); not working!
 
 // end of program

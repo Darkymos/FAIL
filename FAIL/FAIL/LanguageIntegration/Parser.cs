@@ -267,9 +267,8 @@ internal class Parser
         AcceptAny();
         Accept(TokenType.OpeningParenthese);
         var argList = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese);
-        Accept(TokenType.OpeningBracket);
 
-        var body = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, argList.Commands, scope);
+        var body = ParseBody(argList.Commands, scope);
         if (returnType!.Value.Value != KeyWord.Void && body.Commands.Entries.Last() is not Return) 
             throw ExceptionCreator.FunctionMustReturnValue(identifier!.Value.Value);
 
@@ -329,8 +328,7 @@ internal class Parser
         Accept(TokenType.OpeningParenthese);
         var testCommand = ParseCommand(scope, TokenType.ClosingParenthese);
 
-        Accept(TokenType.OpeningBracket);
-        var ifBody = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope);
+        var ifBody = ParseBody(scope);
 
         if (!IsEOT() && IsTypeOf(TokenType.KeyWord) && HasValue(KeyWord.Else))
         {
@@ -341,8 +339,7 @@ internal class Parser
                 return new If(testCommand!, ifBody, ParseIf(scope, out var dummy), token);
             }
 
-            Accept(TokenType.OpeningBracket);
-            return new If(testCommand!, ifBody, ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope), token); 
+            return new If(testCommand!, ifBody, ParseBody(scope), token); 
         }
 
         return new If(testCommand!, ifBody, null, token);
@@ -357,10 +354,7 @@ internal class Parser
         Accept(TokenType.OpeningParenthese);
         var testCommand = ParseCommand(scope, TokenType.ClosingParenthese);
 
-        Accept(TokenType.OpeningBracket);
-        var body = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scope);
-
-        return new While(testCommand!, body, token);
+        return new While(testCommand!, ParseBody(scope), token);
     }
     protected AST ParseFor(Scope scope, out bool endOfStatementRequiredVariable)
     {
@@ -376,12 +370,19 @@ internal class Parser
         var iteratorTest = ParseCommand(internalScope, TokenType.EndOfStatement);
         var iteratorAction = ParseCommand(internalScope, TokenType.ClosingParenthese);
 
-        Accept(TokenType.OpeningBracket);
-        var body = ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, internalScope, scope);
-
-        return new For(iteratorVariable, iteratorTest, iteratorAction, body, token);
+        return new For(iteratorVariable, iteratorTest, iteratorAction, ParseBody(internalScope, scope), token);
     }
     
+    protected CommandList ParseBody(params Scope[] scopes)
+    {
+        if (IsTypeOf(TokenType.OpeningBracket))
+        {
+            Accept(TokenType.OpeningBracket);
+            return ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scopes);
+        }
+        else return new(new(new() { ParseCommand(new(new(), scopes), TokenType.EndOfStatement, acceptEndOfStatementSign: false) }));
+    }
+
     protected AST ParseSimpleCommand(KeyWord keyWord, Scope scope, TokenType endOfStatementSign)
     {
         var instance = Activator.CreateInstance(Type.GetType($"FAIL.ElementTree.{keyWord}")!, CurrentToken);

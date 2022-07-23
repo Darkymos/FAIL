@@ -6,9 +6,9 @@ internal class Object : AST
     public dynamic Value { get; }
 
 
-    public Object(dynamic value, Token? token = null) : base(token) => Value = value;
+    public Object(object value, Token? token = null) : base(token) => Value = value;
 
 
     public override dynamic? Call() => Value;
-    public override string ToString() => $"{nameof(Object)}";
+    public override string ToString() => GetType().Name;
 }

@@ -13,4 +13,8 @@ internal enum KeyWord
     Break,
     Continue,
     For,
+    Integer,
+    Double,
+    String,
+    Boolean,
 }

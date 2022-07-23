@@ -1,5 +1,6 @@
 ﻿using FAIL.ElementTree;
 using FAIL.ElementTree.BinaryOperators;
+using FAIL.ElementTree.DataTypes;
 using FAIL.Exceptions;
 using System.Reflection;
 
@@ -85,6 +86,10 @@ internal class Parser
             KeyWord.Var      => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
             KeyWord.Void     => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
             KeyWord.Object   => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
+            KeyWord.Integer  => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
+            KeyWord.Double   => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
+            KeyWord.String   => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
+            KeyWord.Boolean  => ParseType(scope, endOfStatementSign, out endOfStatementSignRequired),
             KeyWord.If       => ParseIf(scope, out endOfStatementSignRequired),
             KeyWord.While    => ParseWhile(scope, out endOfStatementSignRequired),
             KeyWord.For      => ParseFor(scope, out endOfStatementSignRequired),
@@ -101,7 +106,8 @@ internal class Parser
         return result;
     }
 
-    protected ElementTree.DataTypes.Object? ParseObject() => new(CurrentToken!.Value.Value, CurrentToken);
+    protected static ElementTree.DataTypes.Object ParseObject(Type type, Token token) 
+        => Activator.CreateInstance(type, token.Value, token);
 
     protected AST ParseTerm(Scope scope, Calculations calculations = (Calculations)15, AST? heap = null)
     {
@@ -145,11 +151,24 @@ internal class Parser
                                               ParseTerm(scope, Calculations.Term)));
         }
 
-        if (IsTypeOf(TokenType.Number) || IsTypeOf(TokenType.String) || IsTypeOf(TokenType.Boolean))
+        if (IsTypeOf(TokenType.Number))
         {
             AcceptAny();
 
-            return new ElementTree.DataTypes.Object(token!.Value.Value, token);
+            if (token!.Value.Value is int) return ParseObject(typeof(Integer), token!.Value);
+            if (token!.Value.Value is double) return ParseObject(typeof(ElementTree.DataTypes.Double), token!.Value);
+        }
+        if (IsTypeOf(TokenType.String))
+        {
+            AcceptAny();
+
+            return ParseObject(typeof(ElementTree.DataTypes.String), token!.Value);
+        }
+        if (IsTypeOf(TokenType.Boolean))
+        {
+            AcceptAny();
+
+            return ParseObject(typeof(ElementTree.DataTypes.Boolean), token!.Value);
         }
 
         if (IsTypeOf(TokenType.Identifier))
@@ -235,44 +254,42 @@ internal class Parser
 
     protected AST ParseType(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable)
     {
-        return HasValue(KeyWord.Var)
-            ? ParseVar(scope, endOfStatementSign, out endOfStatementSignRequiredVariable)
-            : ParseFunction(scope, endOfStatementSign, out endOfStatementSignRequiredVariable);
+        var type = (KeyWord)CurrentToken!.Value.Value;
+        var identifier = AcceptAny()!.Value;
+        Accept(TokenType.Identifier);
+
+        return IsTypeOf(TokenType.OpeningParenthese)
+            ? ParseFunction(scope, endOfStatementSign, out endOfStatementSignRequiredVariable, type, identifier)
+            : ParseVar(scope, endOfStatementSign, out endOfStatementSignRequiredVariable, type, identifier);
     }
-    protected AST ParseVar(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable)
+    protected AST ParseVar(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable, KeyWord type, Token identifier)
     {
         endOfStatementSignRequiredVariable = true;
 
-        var identifier = AcceptAny();
+        if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
 
-        if (IsAssigned(scope, identifier!.Value.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
-        Accept(TokenType.Identifier);
-
-        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier!.Value.Value, token: identifier);
+        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, type.ToString(), token: identifier);
         Accept(TokenType.Assignment);
 
-        return new Variable(identifier!.Value.Value, 
+        return new Variable(identifier.Value, 
+                            type.ToString(),
                             ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false), 
                             identifier);
     }
-    protected AST ParseFunction(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable)
+    protected AST ParseFunction(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable, KeyWord type, Token identifier)
     {
         endOfStatementSignRequiredVariable = false;
 
-        var returnType = CurrentToken;
-        var identifier = AcceptAny();
+        if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
 
-        if (IsAssigned(scope, identifier!.Value.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
-
-        AcceptAny();
         Accept(TokenType.OpeningParenthese);
         var argList = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese);
 
         var body = ParseBody(argList.Commands, scope);
-        if (returnType!.Value.Value != KeyWord.Void && body.Commands.Entries.Last() is not Return) 
-            throw ExceptionCreator.FunctionMustReturnValue(identifier!.Value.Value);
+        if (type != KeyWord.Void && body.Commands.Entries.Last() is not Return) 
+            throw ExceptionCreator.FunctionMustReturnValue(identifier.Value);
 
-        return new Function(identifier!.Value.Value, returnType!.Value.Value.ToString(), argList, body, identifier);
+        return new Function(identifier.Value, type.ToString(), argList, body, identifier);
     }
 
     protected AST ParseAssignment(Scope scope, Token token)

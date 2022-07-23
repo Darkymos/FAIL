@@ -50,14 +50,27 @@ internal class Tokenizer : IEnumerable<Token>
     };
     public static Dictionary<string, KeyWord> KeyWords { get; } = new()
     {
+        // Peripherals
         { "log", KeyWord.Log },
         { "input", KeyWord.Input },
+
+        // Special typing
         { "var", KeyWord.Var },
         { "void", KeyWord.Void },
+
+        // Types
         { "object", KeyWord.Object },
+        { "int", KeyWord.Integer },
+        { "double", KeyWord.Double },
+        { "string", KeyWord.String },
+        { "bool", KeyWord.Boolean },
+
+        // Decissions
         { "return", KeyWord.Return },
         { "if", KeyWord.If },
         { "else", KeyWord.Else },
+
+        // Loops
         { "while", KeyWord.While },
         { "break", KeyWord.Break },
         { "continue", KeyWord.Continue },

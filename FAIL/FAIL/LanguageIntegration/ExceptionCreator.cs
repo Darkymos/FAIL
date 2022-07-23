@@ -48,12 +48,12 @@ internal static class ExceptionCreator
     public static WrongTypeException VariableExpected() => new("", 0, 0, "");
     public static WrongTypeException BooleanExpected() => new("", 0, 0, "");
 
-    public static WrongCountException WrongParameterCount(int expected, int given, string funcName, Token token)
+    public static WrongCountException WrongParameterCount(int expected, int given, string funcName, Token? token)
     {
         var message = $"No overload for function '{funcName}' takes {given} arguments!";
 
         Interpreter.Logger!.Log(message, LogLevel.Critical);
-        return new(expected, given, message, token.Row, token.Column, token.FileName);
+        return new(expected, given, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");
     }
 
     public static Exception FunctionMustReturnValue(string funcName)

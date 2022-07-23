@@ -197,4 +197,11 @@ log(AddValues(3, 2));
 int integer = 1;
 log(integer);
 
+log("functions with optional parameters ------------------------------------");
+int Increment(int a, int b = 1) {
+	return a + b;
+}
+log(Increment(5));
+log(Increment(5, 3));
+
 // end of program

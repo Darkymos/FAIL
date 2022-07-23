@@ -28,8 +28,8 @@ internal class FunctionCall : AST
         var expected = Function.Parameters.Commands.Entries;
         var given = Parameters.Commands.Entries;
 
-        if (given.Count != expected.Count)
-            throw ExceptionCreator.WrongParameterCount(expected.Count, given.Count, Function.Name, Token!.Value);
+        if (given.Count != expected.Count && NonOptionalParametersMissing(expected, given))
+            throw ExceptionCreator.WrongParameterCount(expected.Count, given.Count, Function.Name, Token?.Value);
 
         // check for datatype
         /*for (var i = 0; i < expected.Count; i++)
@@ -42,9 +42,18 @@ internal class FunctionCall : AST
         var assignTo = Function.Parameters.Commands.Entries;
         var values = Parameters.Commands.Entries;
 
-        for (var i = 0; i < assignTo.Count; i++)
+        for (var i = 0; i < values.Count; i++)
         {
             (assignTo[i] as Variable)!.Reassign(values[i]);
         }
+    }
+    private bool NonOptionalParametersMissing(List<AST> expected, List<AST> given)
+    {
+        for (var i = 0; i < expected.Count; i++)
+        {
+            if (expected[i] is Variable var && !var.IsSet() && given.Count <= i) return true;
+        }
+
+        return false;
     }
 }

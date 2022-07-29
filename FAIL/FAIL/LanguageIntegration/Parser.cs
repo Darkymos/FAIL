@@ -18,17 +18,17 @@ internal class Parser
 
     // they just map tokens to types of the element tree
     // kinda redundant, but i haven't found a way to replace them yet
-    protected static readonly Dictionary<string, Type> DotOperatorMapper = new()
+    protected static readonly Dictionary<string, System.Type> DotOperatorMapper = new()
     {
         { "*", typeof(Multiplication) },
         { "/", typeof(Division) },
     };
-    protected static readonly Dictionary<string, Type> StrokeOperatorMapper = new()
+    protected static readonly Dictionary<string, System.Type> StrokeOperatorMapper = new()
     {
         { "+", typeof(Addition) },
         { "-", typeof(Substraction) },
     };
-    protected static readonly Dictionary<string, Type> TestOperatorMapper = new()
+    protected static readonly Dictionary<string, System.Type> TestOperatorMapper = new()
     {
         { "==", typeof(Equal) },
         { "!=", typeof(NotEqual) },
@@ -37,14 +37,14 @@ internal class Parser
         { ">", typeof(GreaterThan) },
         { "<", typeof(LessThan) },
     };
-    protected static readonly Dictionary<string, Type> SelfAssignmentOperatorMapper = new()
+    protected static readonly Dictionary<string, System.Type> SelfAssignmentOperatorMapper = new()
     {
         { "+=", typeof(Addition) },
         { "-=", typeof(Substraction) },
         { "*=", typeof(Multiplication) },
         { "/=", typeof(Division) },
     };
-    protected static readonly Dictionary<string, Type> IncrementalOperatorMapper = new()
+    protected static readonly Dictionary<string, System.Type> IncrementalOperatorMapper = new()
     {
         { "++", typeof(Addition) },
         { "--", typeof(Substraction) },
@@ -84,7 +84,7 @@ internal class Parser
                                TokenType? endOfBlockSign = null)
     {
         AST result;
-        var isBlock = true; // kinda redundant, but still there, until a better solution is found
+        var isBlock = false; // kinda redundant, but still there, until a better solution is found
 
         switch (CurrentToken!.Value.Type)
         {
@@ -114,20 +114,20 @@ internal class Parser
                 var token = CurrentToken!.Value;
                 AcceptAny();
                 Accept(TokenType.OpeningParenthese);
-                result = (Activator.CreateInstance(Type.GetType($"FAIL.ElementTree.{token.Type}")!, ParseCommand(scope, TokenType.ClosingParenthese), token) as AST)!;
+                result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token.Type}")!, ParseCommand(scope, TokenType.ClosingParenthese), token) as AST)!;
                 break;
 
             // simple statements following a keyword
             case TokenType.Return:
                 var token2 = CurrentToken!.Value;
                 AcceptAny();
-                result = (Activator.CreateInstance(Type.GetType($"FAIL.ElementTree.{token2.Type}")!, ParseCommand(scope, endOfStatementSign), token2) as AST)!;
+                result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token2.Type}")!, ParseCommand(scope, endOfStatementSign), token2) as AST)!;
                 break;
 
             // simple keywords without any additional information
             case TokenType.Continue:
             case TokenType.Break:
-                result = (Activator.CreateInstance(Type.GetType($"FAIL.ElementTree.{CurrentToken!.Value.Type}")!, CurrentToken) as AST)!;
+                result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{CurrentToken!.Value.Type}")!, CurrentToken) as AST)!;
                 AcceptAny();
                 break;
 
@@ -146,8 +146,13 @@ internal class Parser
     }
 
     // the corresponding datatype will be invoked (currently just built-in types)
-    protected static ElementTree.DataTypes.Object ParseObject(Type type, Token token) 
-        => Activator.CreateInstance(type, token.Value, token);
+    protected static ElementTree.DataTypes.Object ParseObject(ElementTree.Type type, Token token)
+    {
+        var builtInType = System.Type.GetType($"FAIL.ElementTree.DataTypes.{type.Name}");
+        if (builtInType is not null) return Activator.CreateInstance(builtInType, token.Value, token);
+
+        throw new NotImplementedException();
+    }
 
     // this all parses arithmetically
     protected AST ParseTerm(Scope scope, Calculations calculations = (Calculations)15, AST? heap = null)
@@ -202,20 +207,20 @@ internal class Parser
         {
             AcceptAny();
 
-            if (token!.Value.Value is int) return ParseObject(typeof(Integer), token!.Value);
-            if (token!.Value.Value is double) return ParseObject(typeof(ElementTree.DataTypes.Double), token!.Value);
+            if (token!.Value.Value is int) return ParseObject(new("Integer"), token!.Value);
+            if (token!.Value.Value is double) return ParseObject(new("Double"), token!.Value);
         }
         if (IsTypeOf(TokenType.String))
         {
             AcceptAny();
 
-            return ParseObject(typeof(ElementTree.DataTypes.String), token!.Value);
+            return ParseObject(new("String"), token!.Value);
         }
         if (IsTypeOf(TokenType.Boolean))
         {
             AcceptAny();
 
-            return ParseObject(typeof(ElementTree.DataTypes.Boolean), token!.Value);
+            return ParseObject(new("Boolean"), token!.Value);
         }
 
         // any non-string text
@@ -303,12 +308,12 @@ internal class Parser
         if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value); 
 
         // unassigned variable (used in function parameters)
-        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, type.ToString(), token: identifier);
+        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, new ElementTree.Type(type.ToString()), token: identifier);
 
         // already assigned variable (get the value)
         Accept(TokenType.Assignment);
         return new Variable(identifier.Value, 
-                            type.ToString(),
+                            new ElementTree.Type(type.ToString()),
                             ParseCommand(scope), 
                             identifier);
     }
@@ -329,7 +334,7 @@ internal class Parser
         if (type != TokenType.Void && body.Commands.Entries.Last() is not Return) 
             throw ExceptionCreator.FunctionMustReturnValue(identifier.Value);
 
-        return new Function(identifier.Value, type.ToString(), argList, body, identifier);
+        return new Function(identifier.Value, new ElementTree.Type(type.ToString()), argList, body, identifier);
     }
 
     // variable manipulations and function calls

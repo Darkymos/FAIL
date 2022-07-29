@@ -4,11 +4,11 @@ namespace FAIL.ElementTree;
 internal class Variable : AST
 {
     public string Name { get; }
-    public string Type { get; }
+    public Type Type { get; }
     private AST? Value { get; set; }
 
 
-    public Variable(string name, string type, AST? value = null, Token? token = null) : base(token)
+    public Variable(string name, Type type, AST? value = null, Token? token = null) : base(token)
     {
         Name = name;
         Value = value;

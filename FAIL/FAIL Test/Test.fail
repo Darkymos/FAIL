@@ -169,8 +169,8 @@ dummy /= 2;
 log(dummy);
 
 log("input -----------------------------------------------------------------");
-log(input());
-log(input("Guess a number: "));
+//log(input());
+//log(input("Guess a number: "));
 
 log("incremental operators -------------------------------------------------");
 var inc = 0;

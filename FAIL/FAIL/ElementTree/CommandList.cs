@@ -3,7 +3,7 @@
 namespace FAIL.ElementTree;
 internal class CommandList : AST
 {
-    public Scope Commands { get; init; }        
+    public Scope Commands { get; }        
 
 
     public CommandList(Scope commands, Token? token = null) : base(token) => Commands = commands;
@@ -14,7 +14,7 @@ internal class CommandList : AST
         var results = ProcessAll();
         return results.Count == 0 ? null : results[^1];
     }
-    public override string ToString() => $"{nameof(CommandList)} with {Commands.Entries.Count} elements";
+    public override string ToString() => $"{GetType().Name} with {Commands.Entries.Count} elements";
 
     private List<dynamic?> ProcessAll()
     {

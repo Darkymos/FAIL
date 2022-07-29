@@ -10,5 +10,5 @@ internal abstract class AST
 
 
     public abstract dynamic? Call();
-    public override string ToString() => $"{nameof(AST)}";
+    public override string ToString() => GetType().Name;
 }

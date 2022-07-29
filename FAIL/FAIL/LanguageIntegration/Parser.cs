@@ -74,9 +74,8 @@ internal class Parser
         return new CommandList(commands);
     }
     protected AST ParseCommand(Scope scope, 
-                               TokenType endOfStatementSign, 
-                               TokenType? endOfBlockSign = null, 
-                               bool acceptEndOfStatementSign = true)
+                               TokenType? endOfStatementSign = null, 
+                               TokenType? endOfBlockSign = null)
     {
         AST result;
         var endOfStatementSignRequired = true;
@@ -87,7 +86,7 @@ internal class Parser
             case TokenType.Void:
             case TokenType.Object:
             case TokenType.DataType:
-                result = ParseType(scope, endOfStatementSign, out endOfStatementSignRequired);
+                result = ParseType(scope, out endOfStatementSignRequired);
                 break;
 
             case TokenType.If:
@@ -98,7 +97,7 @@ internal class Parser
                 AcceptAny();
                 Accept(TokenType.OpeningParenthese);
                 result = (GetType().GetMethod($"Parse{token3.Type}", BindingFlags.NonPublic | BindingFlags.Instance)!
-                                   .Invoke(this, new object[] { scope, endOfStatementSign, token3 }) as AST)!;
+                                   .Invoke(this, new object[] { scope, token3 }) as AST)!;
                 break;
 
             case TokenType.Log:
@@ -126,11 +125,11 @@ internal class Parser
                 break;
         }
 
-        if (acceptEndOfStatementSign
+        if (endOfStatementSign is not null
             && endOfStatementSignRequired   
             && !IsEOT() 
             && !(endOfBlockSign is not null && IsTypeOf(endOfBlockSign.Value))) 
-            Accept(endOfStatementSign);
+            Accept(endOfStatementSign!.Value);
 
         return result;
     }
@@ -262,17 +261,17 @@ internal class Parser
         return heap;
     }
 
-    protected AST ParseType(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable)
+    protected AST ParseType(Scope scope, out bool endOfStatementSignRequiredVariable)
     {
         var type = CurrentToken!.Value.Type;
         var identifier = AcceptAny()!.Value;
         Accept(TokenType.Identifier);
 
         return IsTypeOf(TokenType.OpeningParenthese)
-            ? ParseFunction(scope, endOfStatementSign, out endOfStatementSignRequiredVariable, type, identifier)
-            : ParseVar(scope, endOfStatementSign, out endOfStatementSignRequiredVariable, type, identifier);
+            ? ParseFunction(scope, out endOfStatementSignRequiredVariable, type, identifier)
+            : ParseVar(scope, out endOfStatementSignRequiredVariable, type, identifier);
     }
-    protected AST ParseVar(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable, TokenType type, Token identifier)
+    protected AST ParseVar(Scope scope, out bool endOfStatementSignRequiredVariable, TokenType type, Token identifier)
     {
         endOfStatementSignRequiredVariable = true;
 
@@ -283,10 +282,10 @@ internal class Parser
 
         return new Variable(identifier.Value, 
                             type.ToString(),
-                            ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false), 
+                            ParseCommand(scope), 
                             identifier);
     }
-    protected AST ParseFunction(Scope scope, TokenType endOfStatementSign, out bool endOfStatementSignRequiredVariable, TokenType type, Token identifier)
+    protected AST ParseFunction(Scope scope, out bool endOfStatementSignRequiredVariable, TokenType type, Token identifier)
     {
         endOfStatementSignRequiredVariable = false;
 
@@ -305,7 +304,7 @@ internal class Parser
     protected AST ParseAssignment(Scope scope, Token token)
     {
         Accept(TokenType.Assignment);
-        return new Assignment(GetValidVariable(scope, token.Value, token), ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false));
+        return new Assignment(GetValidVariable(scope, token.Value, token), ParseCommand(scope));
     }
     protected AST ParseSelfAssignment(Scope scope, Token token)
     {
@@ -316,7 +315,7 @@ internal class Parser
         return new Assignment(variable,
                               Activator.CreateInstance(SelfAssignmentOperatorMapper[GetValue(op)],
                                                        variable,
-                                                       ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false),
+                                                       ParseCommand(scope),
                                                        token));
     }
     protected AST ParseFunctionCall(Scope scope, Token? token)
@@ -338,7 +337,7 @@ internal class Parser
                                                        token));
     }
 
-    protected AST ParseIf(Scope scope, TokenType endOfStatementSign, Token token)
+    protected AST ParseIf(Scope scope, Token token)
     {
         var testCommand = ParseCommand(scope, TokenType.ClosingParenthese);
 
@@ -351,20 +350,20 @@ internal class Parser
             return new If(testCommand!,
                           ifBody,
                           IsTypeOf(TokenType.If)
-                            ? ParseCommand(scope, TokenType.EndOfStatement, acceptEndOfStatementSign: false)
+                            ? ParseCommand(scope)
                             : ParseBody(scope),
                           token);
         }
 
         return new If(testCommand!, ifBody, null, token);
     }
-    protected AST ParseWhile(Scope scope, TokenType endOfStatementSign, Token token)
+    protected AST ParseWhile(Scope scope, Token token)
     {
         var testCommand = ParseCommand(scope, TokenType.ClosingParenthese);
 
         return new While(testCommand!, ParseBody(scope), token);
     }
-    protected AST ParseFor(Scope scope, TokenType endOfStatementSign, Token token)
+    protected AST ParseFor(Scope scope, Token token)
     {
         var internalScope = new Scope(new());
         var iteratorVariable = ParseCommand(internalScope, TokenType.EndOfStatement);
@@ -382,7 +381,7 @@ internal class Parser
             Accept(TokenType.OpeningBracket);
             return ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scopes);
         }
-        else return new(new(new() { ParseCommand(new(new(), scopes), TokenType.EndOfStatement, acceptEndOfStatementSign: false) }));
+        else return new(new(new() { ParseCommand(new(new(), scopes)) }));
     }
 
 

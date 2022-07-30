@@ -15,6 +15,7 @@ internal class CommandList : AST
         return results.Count == 0 ? null : results[^1];
     }
     public override string ToString() => $"{GetType().Name} with {Commands.Entries.Count} elements";
+    public override Type GetType() => new("Undefined");
 
     private List<dynamic?> ProcessAll()
     {

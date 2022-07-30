@@ -39,4 +39,5 @@ internal class For : AST
         }
         catch (BreakException) { return null; }
     }
+    public override Type GetType() => new("Undefined");
 }

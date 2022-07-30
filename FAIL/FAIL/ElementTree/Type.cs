@@ -11,4 +11,9 @@ internal class Type : AST
 
 
     public override dynamic? Call() => throw new NotImplementedException();
+    public override Type GetType() => this;
+    public override string ToString() => Name;
+
+    public static bool operator ==(Type first, Type second) => first.Name == second.Name;
+    public static bool operator !=(Type first, Type second) => first.Name != second.Name;
 }

@@ -15,7 +15,14 @@ internal abstract class BinaryOperator : AST
 
 
     public override dynamic Call() => Calculate(FirstParameter!.Call(), SecondParameter!.Call());
+    public override Type GetType() => GetCombinedType(FirstParameter!, SecondParameter!);
     public override string ToString() => $"{nameof(BinaryOperator)}";
 
     public abstract dynamic Calculate(dynamic firstParameter, dynamic secondParameter);
+
+    private Type GetCombinedType(AST firstParameter, AST secondParameter)
+    {
+        if (firstParameter.GetType() == secondParameter.GetType()) return firstParameter.GetType();
+        return new(nameof(String));
+    }
 }

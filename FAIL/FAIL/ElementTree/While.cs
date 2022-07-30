@@ -27,4 +27,5 @@ internal class While : AST
         }
         catch (BreakException) { return null; }
     }
+    public override Type GetType() => new("Undefined");
 }

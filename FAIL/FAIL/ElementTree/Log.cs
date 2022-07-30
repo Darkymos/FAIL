@@ -19,4 +19,5 @@ internal class Log : AST
 
         return result;
     }
+    public override Type GetType() => new("Void");
 }

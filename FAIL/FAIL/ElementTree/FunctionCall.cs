@@ -22,6 +22,7 @@ internal class FunctionCall : AST
 
         return Function.Call();
     }
+    public override Type GetType() => Function.GetType();
 
     private void ValidateParameters()
     {
@@ -31,11 +32,8 @@ internal class FunctionCall : AST
         if (given.Count != expected.Count && NonOptionalParametersMissing(expected, given))
             throw ExceptionCreator.WrongParameterCount(expected.Count, given.Count, Function.Name, Token?.Value);
 
-        // check for datatype
-        /*for (var i = 0; i < expected.Count; i++)
-        {
-            if (given[i].Call())
-        }*/
+        for (var i = 0; i < given.Count; i++)
+            Parser.CheckType(given[i].GetType(), expected[i].GetType(), (expected[i] as Variable)!.Name, given[i].Token!.Value);
     }
     private void MapParameters()
     {

@@ -285,9 +285,15 @@ internal class Tokenizer : IEnumerable<Token>
         else if (CurrentState == State.Char) token = new(TokenType.String, Buffer[1], Row, Column - (uint)Buffer.Length, FileName);
         else
         {
-            token = KeyWords.ContainsKey(Buffer.ToString())
-                ? (new(KeyWords[Buffer.ToString()], Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName))
-                : (new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName));
+            if (KeyWords.ContainsKey(Buffer.ToString()))
+            {
+                if (Buffer.ToString() == "bool") token = new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName);
+                else if (Buffer.ToString() == "string") token = new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName);
+                else if (Buffer.ToString() == "int") token = new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName);
+                else if (Buffer.ToString() == "double") token = new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName);
+                else token = new(KeyWords[Buffer.ToString()], Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName); 
+            }
+            else token = new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName);
         }
 
         Buffer = new();

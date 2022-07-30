@@ -6,4 +6,6 @@ internal class Boolean : Object
     public Boolean(bool value, Token? token = null) : base(value, token)
     {
     }
+
+    public override Type GetType() => new(nameof(Boolean));
 }

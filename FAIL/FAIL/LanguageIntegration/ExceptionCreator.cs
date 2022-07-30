@@ -63,4 +63,12 @@ internal static class ExceptionCreator
         Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(message);
     }
+
+    public static InvalidTypeException InvalidType(string name, ElementTree.Type given, ElementTree.Type expected, Token? token)
+    {
+        var message = $"'{name}' was given type '{given.Name}', when type '{expected.Name}' was expected!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(name, given, expected, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");
+    }
 }

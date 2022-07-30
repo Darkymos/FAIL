@@ -10,4 +10,5 @@ internal class Reference : AST
 
 
     public override dynamic? Call() => Variable.Call();
+    public override Type GetType() => Variable.GetType();
 }

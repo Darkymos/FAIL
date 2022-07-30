@@ -11,4 +11,5 @@ internal class Return : AST
 
 
     public override dynamic? Call() => throw new ReturnException(ReturnValue?.Call());
+    public override Type GetType() => ReturnValue!.GetType();
 }

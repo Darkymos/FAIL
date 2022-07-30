@@ -31,4 +31,5 @@ internal class Function : AST
             return ex.Value;
         }
     }
+    public override Type GetType() => ReturnType;
 }

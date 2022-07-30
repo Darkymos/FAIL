@@ -19,4 +19,5 @@ internal class Assignment : AST
         AssignTo.Reassign(new DataTypes.Object(Value.Call()));
         return null;
     }
+    public override Type GetType() => Value.GetType();
 }

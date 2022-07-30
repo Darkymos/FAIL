@@ -88,7 +88,7 @@ Log(42);
 //Log(42, "test"); wrong argument count!
 
 log("functions with return value -------------------------------------------");
-object Add(var a, var b) {
+var Add(var a, var b) {
 	return a + b;
 }
 var result = Add(1, 2);
@@ -190,7 +190,7 @@ if (inc == 0) log("inc is 0");
 //void BodyLessFunction() log("body-less function"); not working!
 
 log("typed functions and variables------------------------------------------");
-int AddValues(var a, var b) {
+var AddValues(var a, var b) {
 	return a + b;
 }
 log(AddValues(3, 2));
@@ -203,5 +203,9 @@ int Increment(int a, int b = 1) {
 }
 log(Increment(5));
 log(Increment(5, 3));
+
+log("type system tests -----------------------------------------------------");
+int integerVar = 5;
+//int shouldBeInteger = "FAIL"; wrong type!
 
 // end of program

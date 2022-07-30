@@ -23,4 +23,5 @@ internal class If : AST
 
         return null;
     }
+    public override Type GetType() => new("Undefined");
 }

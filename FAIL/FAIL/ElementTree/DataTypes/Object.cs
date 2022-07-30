@@ -10,5 +10,5 @@ internal class Object : AST
 
 
     public override dynamic? Call() => Value;
-    public override string ToString() => GetType().Name;
+    public override Type GetType() => new(nameof(Object));
 }

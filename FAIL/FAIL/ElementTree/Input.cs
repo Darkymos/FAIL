@@ -15,4 +15,5 @@ internal class Input : AST
         if (result is not null) Console.Write(result);
         return Console.ReadLine();
     }
+    public override Type GetType() => Command.GetType();
 }

@@ -11,11 +11,13 @@ internal class Variable : AST
     public Variable(string name, Type type, AST? value = null, Token? token = null) : base(token)
     {
         Name = name;
+        Type = type;
         Value = value;
     }
 
 
     public override dynamic? Call() => Value?.Call();
+    public override Type GetType() => Type;
 
     public void Reassign(AST value) => Value = value;
     public bool IsSet() => Value is not null;

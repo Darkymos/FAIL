@@ -6,4 +6,6 @@ internal class Double : Object
     public Double(double value, Token? token = null) : base(value, token)
     {
     }
+
+    public override Type GetType() => new(nameof(Double));
 }

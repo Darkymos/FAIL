@@ -292,7 +292,7 @@ internal class Parser
     // everthing related to types (e.g. declarations)
     protected AST ParseType(Scope scope, out bool isBlock)
     {
-        var type = CurrentToken!.Value.Type;
+        var type = CurrentToken!.Value;
         var identifier = AcceptAny()!.Value;
         Accept(TokenType.Identifier);
 
@@ -300,7 +300,7 @@ internal class Parser
             ? ParseFunction(scope, out isBlock, type, identifier)
             : ParseVar(scope, out isBlock, type, identifier);
     }
-    protected AST ParseVar(Scope scope, out bool isBlock, TokenType type, Token identifier)
+    protected AST ParseVar(Scope scope, out bool isBlock, Token type, Token identifier)
     {
         isBlock = false;
 
@@ -308,16 +308,16 @@ internal class Parser
         if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value); 
 
         // unassigned variable (used in function parameters)
-        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, new ElementTree.Type(type.ToString()), token: identifier);
+        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, new ElementTree.Type(type.Value), token: identifier);
 
         // already assigned variable (get the value)
         Accept(TokenType.Assignment);
         return new Variable(identifier.Value, 
-                            new ElementTree.Type(type.ToString()),
-                            ParseCommand(scope), 
+                            new ElementTree.Type(type.Value),
+                            CheckType(ParseCommand(scope), new ElementTree.Type(type.Value), identifier.Value, identifier), 
                             identifier);
     }
-    protected AST ParseFunction(Scope scope, out bool isBlock, TokenType type, Token identifier)
+    protected AST ParseFunction(Scope scope, out bool isBlock, Token type, Token identifier)
     {
         isBlock = true;
 
@@ -331,28 +331,40 @@ internal class Parser
         var body = ParseBody(argList.Commands, scope);
 
         // if there is a return type declared in front of the identifier, there has to be a return a the end (currently)
-        if (type != TokenType.Void && body.Commands.Entries.Last() is not Return) 
+        if (type.Type != TokenType.Void && body.Commands.Entries.Last() is not Return) 
             throw ExceptionCreator.FunctionMustReturnValue(identifier.Value);
 
-        return new Function(identifier.Value, new ElementTree.Type(type.ToString()), argList, body, identifier);
+        if (type.Type != TokenType.Void) CheckType(body.Commands.Entries.Last().GetType(), new ElementTree.Type(type.Value), "return", body.Commands.Entries.Last().Token!.Value);
+
+        return new Function(identifier.Value, new ElementTree.Type(type.Value), argList, body, identifier);
     }
 
     // variable manipulations and function calls
     protected AST ParseAssignment(Scope scope, Token token)
     {
         Accept(TokenType.Assignment);
-        return new Assignment(GetValidVariable(scope, token.Value, token), ParseCommand(scope));
+
+        var variable = (Variable)GetValidVariable(scope, token.Value, token);
+        var newValue = ParseCommand(scope);
+
+        CheckType(newValue.GetType(), variable.GetType(), variable.Name, token);
+
+        return new Assignment(variable, newValue);
     } // test = 42;
     protected AST ParseSelfAssignment(Scope scope, Token token)
     {
         var op = CurrentToken;
         Accept(TokenType.SelfAssignment);
 
-        var variable = GetValidVariable(scope, token.Value, token); 
+        var variable = (Variable)GetValidVariable(scope, token.Value, token);
+        var newValue = ParseCommand(scope);
+
+        CheckType(newValue.GetType(), variable.GetType(), variable.Name, token);
+
         return new Assignment(variable,
                               Activator.CreateInstance(SelfAssignmentOperatorMapper[GetValue(op)],
                                                        variable,
-                                                       ParseCommand(scope),
+                                                       newValue,
                                                        token));
     } // test += 42;
     protected AST ParseFunctionCall(Scope scope, Token? token)
@@ -422,6 +434,15 @@ internal class Parser
             return ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scopes);
         }
         else return new(new(new() { ParseCommand(new(new(), scopes)) }));
+    }
+
+    // type-system-related stuff
+    public static AST CheckType(AST given, ElementTree.Type expected, string name, Token token)
+    {
+        if (expected.GetType().Name == "var") return given;
+        if (expected.GetType().Name == "object") return CheckType(given, new("Object"), name, token);
+        if (given.GetType() == expected) return given;
+        throw ExceptionCreator.InvalidType(name, given.GetType(), expected, token);
     }
 
 

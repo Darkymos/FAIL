@@ -233,7 +233,8 @@ internal class Parser
             if (IsTypeOf(TokenType.SelfAssignment)) return ParseSelfAssignment(scope, token!.Value); // test += 42;
             if (IsTypeOf(TokenType.OpeningParenthese)) return ParseFunctionCall(scope, token); // Test();
             if (IsTypeOf(TokenType.IncrementalOperator)) return ParseIncrementalOperator(scope, token!.Value); // test++;
-            return new Reference(scope, token);
+
+            return new Reference(Parser.GetValidVariable(scope, token!.Value.Value, token!.Value), token); 
         }
 
         return heap!;

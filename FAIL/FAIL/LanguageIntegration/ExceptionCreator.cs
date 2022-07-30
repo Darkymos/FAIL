@@ -87,4 +87,12 @@ internal static class ExceptionCreator
         Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(functionName, message, 0, 0, "");
     }
+
+    public static NotAssignedException UseOfUnassignedVariable(string variableName, Token? token)
+    {
+        var message = $"Use of unassigned variable '{variableName}'";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(variableName, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");
+    }
 }

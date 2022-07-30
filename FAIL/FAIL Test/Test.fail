@@ -60,7 +60,7 @@ log(test);
 //log(test = "test"); not working!
 //var test = 42; already assigned!
 var lazy;
-log(lazy); // this shouldn't be working i guess
+//log(lazy); this shouldn't be working i guess
 lazy = 1;
 log(lazy);
 

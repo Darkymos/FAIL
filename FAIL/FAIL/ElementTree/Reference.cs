@@ -3,12 +3,17 @@
 namespace FAIL.ElementTree;
 internal class Reference : AST
 {
-    private readonly AST Variable;
+    private readonly Variable Variable;
 
 
-    public Reference(Scope scope, Token? token = null) : base(token) => Variable = Parser.GetValidVariable(scope, token!.Value.Value, token!.Value);
+    public Reference(Variable variable, Token? token = null) : base(token) => Variable = variable;
 
 
-    public override dynamic? Call() => Variable.Call();
+    public override dynamic? Call()
+    {
+        if (!Variable.IsSet()) throw ExceptionCreator.UseOfUnassignedVariable(Variable.Name, Token);
+        return Variable.Call();
+    }
+
     public override Type GetType() => Variable.GetType();
 }

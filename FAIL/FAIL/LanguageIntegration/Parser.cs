@@ -4,6 +4,7 @@ using FAIL.ElementTree.DataTypes;
 using FAIL.Exceptions;
 using System.Diagnostics;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace FAIL.LanguageIntegration;
 internal class Parser
@@ -321,22 +322,24 @@ internal class Parser
     {
         isBlock = true;
 
-        // identifier must be unique in scope (variables AND functions), local are superior to shared ones (identifier doesn't need to be unique)
-        if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value);
-
-        // 'argList' may be empty
+        // 'parameters' may be empty
         Accept(TokenType.OpeningParenthese);
-        var argList = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese);
+        var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese);
 
-        var body = ParseBody(argList.Commands, scope);
+        var body = ParseBody(parameters.Commands, scope);
 
         // if there is a return type declared in front of the identifier, there has to be a return a the end (currently)
         if (type.Type != TokenType.Void && body.Commands.Entries.Last() is not Return) 
             throw ExceptionCreator.FunctionMustReturnValue(identifier.Value);
 
+        // if there is an return type, we have to check it, funtions without return types may return something, which just won't be validated
         if (type.Type != TokenType.Void) CheckType(body.Commands.Entries.Last().GetType(), new ElementTree.Type(type.Value), "return", body.Commands.Entries.Last().Token!.Value);
 
-        return new Function(identifier.Value, new ElementTree.Type(type.Value), argList, body, identifier);
+        // create the function boilerplate WITHOUT any overload, then add it
+        var function = new Function(identifier.Value, identifier); 
+        function.AddOverload(new(new ElementTree.Type(type.Value), parameters, body));
+
+        return function;
     }
 
     // variable manipulations and function calls
@@ -444,6 +447,13 @@ internal class Parser
         if (given.GetType() == expected) return given;
         throw ExceptionCreator.InvalidType(name, given.GetType(), expected, token);
     }
+    public static bool CheckType(AST given, ElementTree.Type expected)
+    {
+        if (expected.GetType().Name == "var") return true;
+        if (expected.GetType().Name == "object") return CheckType(given, new("Object"));
+        if (given.GetType() == expected) return true;
+        return false;
+    }
 
 
     // simple wrapper methods to keep the code clean (damn nullables :D (but their useful))
@@ -458,7 +468,6 @@ internal class Parser
     protected static bool IsAssigned(Scope scope, string name)
     {
         if (GetVariableFromScope(scope, name) is not null) return true; // variable with the name found in scope
-        if (GetFunctionFromScope(scope, name) is not null) return true; // function with the name found in scope
         return false; // unassigned yet
     }
     protected static Variable? GetVariableFromScope(Scope scope, string name)

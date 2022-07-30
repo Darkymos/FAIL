@@ -208,4 +208,15 @@ log("type system tests -----------------------------------------------------");
 int integerVar = 5;
 //int shouldBeInteger = "FAIL"; wrong type!
 
+log("function overload tests -----------------------------------------------");
+int Add(int a, int b) {
+	return a + b;
+}
+string Add(string a, string b) {
+	return a + b;
+}
+
+log(Add(5, 10));
+log(Add("5", "10"));
+
 // end of program

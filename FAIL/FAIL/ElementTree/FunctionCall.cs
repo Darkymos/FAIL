@@ -12,46 +12,27 @@ internal class FunctionCall : AST
         Function = function;
         Parameters = parameters;
 
-        ValidateParameters();
+        if (!Function.HasOverload(Parameters)) throw ExceptionCreator.OverloadNotFound(Function.Name);
     }
 
 
     public override dynamic? Call()
     {
+        Function.SetCurrentOverload(Function.GetOverload(Parameters)!);
         MapParameters();
 
         return Function.Call();
     }
     public override Type GetType() => Function.GetType();
 
-    private void ValidateParameters()
-    {
-        var expected = Function.Parameters.Commands.Entries;
-        var given = Parameters.Commands.Entries;
-
-        if (given.Count != expected.Count && NonOptionalParametersMissing(expected, given))
-            throw ExceptionCreator.WrongParameterCount(expected.Count, given.Count, Function.Name, Token?.Value);
-
-        for (var i = 0; i < given.Count; i++)
-            Parser.CheckType(given[i].GetType(), expected[i].GetType(), (expected[i] as Variable)!.Name, given[i].Token!.Value);
-    }
     private void MapParameters()
     {
-        var assignTo = Function.Parameters.Commands.Entries;
+        var assignTo = Function.Current!.Parameters.Commands.Entries;
         var values = Parameters.Commands.Entries;
 
         for (var i = 0; i < values.Count; i++)
         {
             (assignTo[i] as Variable)!.Reassign(values[i]);
         }
-    }
-    private bool NonOptionalParametersMissing(List<AST> expected, List<AST> given)
-    {
-        for (var i = 0; i < expected.Count; i++)
-        {
-            if (expected[i] is Variable var && !var.IsSet() && given.Count <= i) return true;
-        }
-
-        return false;
     }
 }

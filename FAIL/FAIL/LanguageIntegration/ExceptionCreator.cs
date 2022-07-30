@@ -71,4 +71,20 @@ internal static class ExceptionCreator
         Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(name, given, expected, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");
     }
+
+    public static OverloadAlreadyExists OverloadAlreadyExists(string functionName)
+    {
+        var message = $"An overload with the same parameters already exists on function '{functionName}'";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(functionName, message, 0, 0, "");
+    }
+
+    public static NotAssignedException OverloadNotFound(string functionName)
+    {
+        var message = $"No matching overload was found on function '{functionName}'!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(functionName, message, 0, 0, "");
+    }
 }

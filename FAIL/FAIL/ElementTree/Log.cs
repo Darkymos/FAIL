@@ -10,14 +10,14 @@ internal class Log : AST
     public Log(AST? command, Token? token = null) : base(token) => Command = command;
 
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
-        var result = Command?.Call();
+        var result = Command?.Call()!.Value;
 
         Interpreter.Logger!.Log(result, LogLevel.Debug);
         Console.WriteLine(Invariant($"{result}"));
 
-        return result;
+        return null;
     }
     public override Type GetType() => new("Void");
 }

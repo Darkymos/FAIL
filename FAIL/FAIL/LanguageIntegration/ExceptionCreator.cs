@@ -72,6 +72,14 @@ internal static class ExceptionCreator
         return new(name, given, expected, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");
     }
 
+    public static InvalidTypeException SpecificTypeNeeded(string functionName, Token token)
+    {
+        var message = "A specific type declaration is needed!";
+
+        Interpreter.Logger!.Log(message, LogLevel.Critical);
+        return new(functionName, new("var"), new("Undefined"), message, token.Row, token.Column, token.FileName);
+    }
+
     public static OverloadAlreadyExists OverloadAlreadyExists(string functionName)
     {
         var message = $"An overload with the same parameters already exists on function '{functionName}'";

@@ -14,9 +14,9 @@ internal class Assignment : AST
     }
 
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
-        AssignTo.Reassign(new DataTypes.Object(Value.Call()));
+        AssignTo.Reassign(Value.Call()!);
         return null;
     }
     public override Type GetType() => Value.GetType();

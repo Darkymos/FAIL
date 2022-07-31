@@ -7,5 +7,6 @@ internal class LessThanOrEqual : BinaryOperator
     {
     }
 
-    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter) => firstParameter <= secondParameter;
+    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter)
+            => new DataTypes.Boolean(firstParameter.Value <= secondParameter.Value);
 }

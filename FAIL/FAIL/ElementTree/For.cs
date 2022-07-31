@@ -19,13 +19,13 @@ internal class For : AST
     }
 
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
         try
         {
             IteratorVariable.Call();
 
-            while (IteratorTest.Call())
+            while (IteratorTest.Call()!.Value)
             {
                 try 
                 {

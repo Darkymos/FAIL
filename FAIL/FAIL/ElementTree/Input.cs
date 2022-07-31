@@ -8,12 +8,12 @@ internal class Input : AST
 
     public Input(AST command, Token? token = null) : base(token) => Command = command;
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
         var result = Command?.Call();
 
         if (result is not null) Console.Write(result);
-        return Console.ReadLine();
+        return new DataTypes.String(Console.ReadLine()!);
     }
     public override Type GetType() => Command.GetType();
 }

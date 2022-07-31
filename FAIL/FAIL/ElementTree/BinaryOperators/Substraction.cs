@@ -7,5 +7,6 @@ internal class Substraction : BinaryOperator
     {
     }
 
-    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter) => firstParameter - secondParameter;
+    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter) 
+        => Activator.CreateInstance(Type.GetUnderlyingType(GetCombinedType()), firstParameter.Value - secondParameter.Value, Token);
 }

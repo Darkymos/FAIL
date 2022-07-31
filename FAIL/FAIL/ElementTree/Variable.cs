@@ -8,6 +8,12 @@ internal class Variable : AST
     private AST? Value { get; set; }
 
 
+    public Variable(string name, AST value, Token? token = null) : base(token)
+    {
+        Name = name;
+        Type = value.GetType();
+        Value = value;
+    }
     public Variable(string name, Type type, AST? value = null, Token? token = null) : base(token)
     {
         Name = name;
@@ -16,7 +22,7 @@ internal class Variable : AST
     }
 
 
-    public override dynamic? Call() => Value?.Call();
+    public override DataTypes.Object? Call() => Value?.Call();
     public override Type GetType() => Type;
 
     public void Reassign(AST value) => Value = value;

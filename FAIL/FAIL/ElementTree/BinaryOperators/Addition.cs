@@ -8,15 +8,15 @@ internal class Addition : BinaryOperator
     }
 
 
-    public override dynamic Calculate(dynamic firstParameter, dynamic secondParameter)
+    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter)
     {
         try
         {
-            return firstParameter + secondParameter;
+            return (DataTypes.Object)Activator.CreateInstance(Type.GetUnderlyingType(GetCombinedType()), firstParameter.Value + secondParameter.Value, Token)!;
         }
         catch (InvalidOperationException)
         {
-            return firstParameter.ToString() + secondParameter.ToString();
+            return new DataTypes.String(firstParameter.Value.ToString() + secondParameter.Value.ToString());
         }
     }
 }

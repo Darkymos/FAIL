@@ -8,6 +8,6 @@ internal class Break : AST
     {
     }
 
-    public override dynamic? Call() => throw new BreakException();
+    public override DataTypes.Object? Call() => throw new BreakException();
     public override Type GetType() => new("Undefined");
 }

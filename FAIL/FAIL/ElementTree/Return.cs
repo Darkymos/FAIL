@@ -10,6 +10,6 @@ internal class Return : AST
     public Return(AST? returnValue, Token? token = null) : base(token) => ReturnValue = returnValue;
 
 
-    public override dynamic? Call() => throw new ReturnException(ReturnValue?.Call());
+    public override DataTypes.Object? Call() => throw new ReturnException(ReturnValue?.Call());
     public override Type GetType() => ReturnValue!.GetType();
 }

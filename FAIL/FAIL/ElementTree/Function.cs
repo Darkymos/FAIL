@@ -75,7 +75,7 @@ internal class Function : AST
         return false;
     }
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
         try
         {

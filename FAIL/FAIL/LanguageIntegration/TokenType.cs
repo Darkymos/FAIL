@@ -34,4 +34,5 @@ internal enum TokenType
     Continue,
     For,
     DataType,
+    As,
 }

@@ -183,7 +183,7 @@ internal class Parser
                 AcceptAny();
                 subTerm = ParseTerm(scope,
                                     Calculations.DotCalculations | Calculations.StrokeCalculations,
-                                    new Substraction(new ElementTree.DataTypes.Object(0),
+                                    new Substraction(new ElementTree.DataTypes.Integer(0),
                                                      ParseTerm(scope, Calculations.Term)));
             }
             else subTerm = ParseTerm(scope);
@@ -199,7 +199,7 @@ internal class Parser
 
             return ParseTerm(scope,
                              Calculations.DotCalculations | Calculations.StrokeCalculations,
-                             new Substraction(new ElementTree.DataTypes.Object(0),
+                             new Substraction(new ElementTree.DataTypes.Integer(0),
                                               ParseTerm(scope, Calculations.Term)));
         }
 
@@ -233,6 +233,7 @@ internal class Parser
             if (IsTypeOf(TokenType.SelfAssignment)) return ParseSelfAssignment(scope, token!.Value); // test += 42;
             if (IsTypeOf(TokenType.OpeningParenthese)) return ParseFunctionCall(scope, token); // Test();
             if (IsTypeOf(TokenType.IncrementalOperator)) return ParseIncrementalOperator(scope, token!.Value); // test++;
+            if (IsTypeOf(TokenType.As)) return ParseConversion(scope, token!.Value); // test as string;
 
             return new Reference(Parser.GetValidVariable(scope, token!.Value.Value, token!.Value), token); 
         }
@@ -307,15 +308,14 @@ internal class Parser
         isBlock = false;
 
         // identifier must be unique in scope (variables AND functions), local are superior to shared ones (identifier doesn't need to be unique)
-        if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier!.Value.Value); 
+        if (IsAssigned(scope, identifier.Value)) throw ExceptionCreator.AlreadyAssignedInScope(identifier.Value); 
 
         // unassigned variable (used in function parameters)
-        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, new ElementTree.Type(type.Value), token: identifier);
+        if (!IsTypeOf(TokenType.Assignment)) return new Variable(identifier.Value, new ElementTree.Type(type.Value), null, token: identifier);
 
         // already assigned variable (get the value)
         Accept(TokenType.Assignment);
         return new Variable(identifier.Value, 
-                            new ElementTree.Type(type.Value),
                             CheckType(ParseCommand(scope), new ElementTree.Type(type.Value), identifier.Value, identifier), 
                             identifier);
     }
@@ -323,9 +323,16 @@ internal class Parser
     {
         isBlock = true;
 
+        // functions must declare specific types for their return value to avoid major issues with result types on calculations
+        if (type.Type.ToString() == "var") throw ExceptionCreator.SpecificTypeNeeded(identifier.Value, identifier);
+
         // 'parameters' may be empty
         Accept(TokenType.OpeningParenthese);
         var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese);
+
+        // functions must declare specific types for their parameters to avoid major issues with result types on calculations
+        foreach (Variable parameter in parameters.Commands.Entries)
+            if (parameter.Type.Name == "var") throw ExceptionCreator.SpecificTypeNeeded(identifier.Value, parameter.Token!.Value);
 
         var body = ParseBody(parameters.Commands, scope);
 
@@ -334,7 +341,15 @@ internal class Parser
             throw ExceptionCreator.FunctionMustReturnValue(identifier.Value);
 
         // if there is an return type, we have to check it, funtions without return types may return something, which just won't be validated
-        if (type.Type != TokenType.Void) CheckType(body.Commands.Entries.Last().GetType(), new ElementTree.Type(type.Value), "return", body.Commands.Entries.Last().Token!.Value);
+        if (type.Type != TokenType.Void) 
+            CheckType(body.Commands.Entries.Last().GetType(), new ElementTree.Type(type.Value), "return", body.Commands.Entries.Last().Token!.Value);
+
+        var existingFunction = GetFunctionFromScope(scope, identifier.Value) as Function;
+        if (existingFunction is not null)
+        {
+            existingFunction.AddOverload(new(new ElementTree.Type(type.Value), parameters, body));
+            return existingFunction;
+        }
 
         // create the function boilerplate WITHOUT any overload, then add it
         var function = new Function(identifier.Value, identifier); 
@@ -353,7 +368,7 @@ internal class Parser
 
         CheckType(newValue.GetType(), variable.GetType(), variable.Name, token);
 
-        return new Assignment(variable, newValue);
+        return new Assignment(variable, newValue, token);
     } // test = 42;
     protected AST ParseSelfAssignment(Scope scope, Token token)
     {
@@ -375,7 +390,7 @@ internal class Parser
     {
         Accept(TokenType.OpeningParenthese);
         var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
-        return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters);
+        return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters, token);
     } // Test();
     protected AST ParseIncrementalOperator(Scope scope, Token token)
     {
@@ -386,9 +401,18 @@ internal class Parser
         return new Assignment(variable,
                               Activator.CreateInstance(IncrementalOperatorMapper[GetValue(op)],
                                                        variable,
-                                                       new ElementTree.DataTypes.Object(1),
+                                                       new Integer(1),
                                                        token));
     } // test++;
+    protected AST ParseConversion(Scope scope, Token token)
+    {
+        Accept(TokenType.As);
+
+        var variable = (Variable)GetValidVariable(scope, token.Value, token);
+        var newType = new ElementTree.Type(Accept(TokenType.DataType)!.Value.Value);
+
+        return new TypeConversion(variable, newType, token);
+    } // test as string;
 
     // block statements
     protected AST ParseIf(Scope scope, Token token)

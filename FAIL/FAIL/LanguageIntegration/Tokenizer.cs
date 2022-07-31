@@ -54,7 +54,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "log", TokenType.Log },
         { "input", TokenType.Input },
 
-        // Special typing
+        // Special types
         { "var", TokenType.Var },
         { "void", TokenType.Void },
 
@@ -75,6 +75,9 @@ internal class Tokenizer : IEnumerable<Token>
         { "break", TokenType.Break },
         { "continue", TokenType.Continue },
         { "for", TokenType.For },
+
+        // Conversions
+        { "as", TokenType.As },
     };
 
     private uint Row = 1;

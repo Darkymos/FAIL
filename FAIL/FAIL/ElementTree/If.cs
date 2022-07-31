@@ -16,9 +16,9 @@ internal class If : AST
     }
 
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
-        if (TestCommand.Call()) IfBody.Call();
+        if (TestCommand.Call()!.Value) IfBody.Call();
         else ElseBody?.Call();
 
         return null;

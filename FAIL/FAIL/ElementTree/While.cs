@@ -15,11 +15,11 @@ internal class While : AST
     }
 
 
-    public override dynamic? Call()
+    public override DataTypes.Object? Call()
     {
         try
         {
-            while (TestCommand.Call()) 
+            while (TestCommand.Call()!.Value) 
                 try { Body.Call(); }
                 catch (ContinueException) { continue; }
 

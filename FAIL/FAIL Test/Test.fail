@@ -55,8 +55,7 @@ var anotherTest = test + 42;
 log(anotherTest);
 anotherTest = anotherTest + 1;
 log(anotherTest);
-test = 42;
-log(test);
+//test = 42; not working, type safety!
 //log(test = "test"); not working!
 //var test = 42; already assigned!
 var lazy;
@@ -79,21 +78,21 @@ TestFunction();
 //}
 
 log("functions with parameters ---------------------------------------------");
-void Log(var value) {
+void Log(string value) {
 	log("Call to 'Log'");
 	log(value);
 }
 Log("test");
-Log(42);
+//Log(42);
 //Log(42, "test"); wrong argument count!
 
 log("functions with return value -------------------------------------------");
-var Add(var a, var b) {
+int AddIntegers(int a, int b) {
 	return a + b;
 }
-var result = Add(1, 2);
+var result = AddIntegers(1, 2);
 log(result);
-log(Add(10, 5));
+log(AddIntegers(10, 5));
 
 // test for call in other file (will be improved in the future)
 //log(Substract(10, 5));
@@ -190,7 +189,7 @@ if (inc == 0) log("inc is 0");
 //void BodyLessFunction() log("body-less function"); not working!
 
 log("typed functions and variables------------------------------------------");
-var AddValues(var a, var b) {
+int AddValues(int a, int b) {
 	return a + b;
 }
 log(AddValues(3, 2));

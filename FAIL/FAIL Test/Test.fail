@@ -214,8 +214,15 @@ int Add(int a, int b) {
 string Add(string a, string b) {
 	return a + b;
 }
-
 log(Add(5, 10));
 log(Add("5", "10"));
+
+log("type conversion tests -------------------------------------------------");
+var integerValue = 10;
+var stringValue = integerValue as string;
+var combinedInteger = integerValue + 10;
+var combinedString = stringValue + "10";
+log(combinedInteger);
+log(combinedString);
 
 // end of program

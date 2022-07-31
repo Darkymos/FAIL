@@ -8,4 +8,6 @@ internal class Integer : Object
     }
 
     public override Type GetType() => new(nameof(Integer));
+
+    public static explicit operator String(Integer integer) => new(integer.Value.ToString(), integer.Token);
 }

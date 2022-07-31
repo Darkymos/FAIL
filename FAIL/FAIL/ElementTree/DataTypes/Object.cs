@@ -11,6 +11,4 @@ internal class Object : AST
 
     public override Object? Call() => this;
     public override Type GetType() => new(nameof(Object));
-
-    public virtual T ConvertTo<T>() where T : Object => (T)this;
 }

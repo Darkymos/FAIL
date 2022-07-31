@@ -409,7 +409,8 @@ internal class Parser
         Accept(TokenType.As);
 
         var variable = (Variable)GetValidVariable(scope, token.Value, token);
-        var newType = new ElementTree.Type(Accept(TokenType.DataType)!.Value.Value);
+        var newType = new ElementTree.Type(CurrentToken!.Value.Value);
+        Accept(TokenType.DataType);
 
         return new TypeConversion(variable, newType, token);
     } // test as string;

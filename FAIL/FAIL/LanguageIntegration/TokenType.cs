@@ -24,7 +24,6 @@ internal enum TokenType
     Log,
     Var,
     Void,
-    Object,
     Return,
     If,
     Else,

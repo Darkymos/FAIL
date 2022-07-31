@@ -6,9 +6,7 @@ internal class Type : AST
     public string Name { get; set; }
 
 
-    public Type(string name, Token? token = null) : base(token) => Name = name;
-
-
+    public Type(string name, Token? token = null) : base(token) => Name = name[0].ToString().ToUpper() + name[1..];
 
     public override DataTypes.Object? Call() => throw new NotImplementedException();
     public override Type GetType() => this;

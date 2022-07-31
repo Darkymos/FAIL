@@ -59,7 +59,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "void", TokenType.Void },
 
         // Types
-        { "object", TokenType.Object },
+        { "object", TokenType.DataType },
         { "int", TokenType.DataType },
         { "double", TokenType.DataType },
         { "string", TokenType.DataType },

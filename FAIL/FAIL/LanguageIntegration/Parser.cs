@@ -92,7 +92,6 @@ internal class Parser
             // types or their possible alternatives
             case TokenType.Var:
             case TokenType.Void:
-            case TokenType.Object:
             case TokenType.DataType:
                 result = ParseType(scope, out isBlock);
                 break;
@@ -410,6 +409,9 @@ internal class Parser
 
         var variable = (Variable)GetValidVariable(scope, token.Value, token);
         var newType = new ElementTree.Type(CurrentToken!.Value.Value);
+
+        if (newType.Name == "var") throw ExceptionCreator.SpecificTypeNeeded(variable.Name, token);
+
         Accept(TokenType.DataType);
 
         return new TypeConversion(variable, newType, token);
@@ -468,8 +470,7 @@ internal class Parser
     // type-system-related stuff
     public static AST CheckType(AST given, ElementTree.Type expected, string name, Token token)
     {
-        if (expected.GetType().Name == "var") return given;
-        if (expected.GetType().Name == "object") return CheckType(given, new("Object"), name, token);
+        if (expected.GetType().Name == "Var") return given;
         if (given.GetType() == expected) return given;
         throw ExceptionCreator.InvalidType(name, given.GetType(), expected, token);
     }

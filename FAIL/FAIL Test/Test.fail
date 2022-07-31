@@ -224,5 +224,7 @@ var combinedInteger = integerValue + 10;
 var combinedString = stringValue + "10";
 log(combinedInteger);
 log(combinedString);
+var objectValue = integerValue as object;
+log(objectValue);
 
 // end of program

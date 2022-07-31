@@ -8,15 +8,6 @@ internal class NotEqual : BinaryOperator
     {
     }
 
-    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter)
-    {
-        try
-        {
-            return new DataTypes.Boolean(firstParameter.Value != secondParameter.Value);
-        }
-        catch (RuntimeBinderException)
-        {
-            return new DataTypes.Boolean(firstParameter.Value.ToString() != secondParameter.Value.ToString());
-        }
-    }
+    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter) 
+        => new DataTypes.Boolean(firstParameter.Value != secondParameter.Value);
 }

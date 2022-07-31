@@ -8,15 +8,6 @@ internal class Addition : BinaryOperator
     }
 
 
-    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter)
-    {
-        try
-        {
-            return (DataTypes.Object)Activator.CreateInstance(Type.GetUnderlyingType(GetCombinedType()), firstParameter.Value + secondParameter.Value, Token)!;
-        }
-        catch (InvalidOperationException)
-        {
-            return new DataTypes.String(firstParameter.Value.ToString() + secondParameter.Value.ToString());
-        }
-    }
+    public override DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter) 
+        => (DataTypes.Object)Activator.CreateInstance(Type.GetUnderlyingType(GetCombinedType()), firstParameter.Value + secondParameter.Value, Token)!;
 }

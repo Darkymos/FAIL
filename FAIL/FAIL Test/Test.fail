@@ -71,11 +71,13 @@ void TestFunction() {
 }
 TestFunction();
 TestFunction();
-//log(local); not allowed, out of scope!
-//void TestFunction() { already assigned!
-//}
-//void test() { already assigned!
-//}
+/*
+	log(local); not allowed, out of scope!
+	void TestFunction() { already assigned!
+	}
+	void test() { already assigned!
+	}
+*/
 
 log("functions with parameters ---------------------------------------------");
 void Log(string value) {

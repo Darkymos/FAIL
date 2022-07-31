@@ -85,7 +85,7 @@ internal class Tokenizer : IEnumerable<Token>
 
     private StringBuilder Buffer = new();
     private State CurrentState = State.Start;
-    private bool isCommented = false;
+    private CommentState CommentState = CommentState.None;
 
     private readonly char[] Raw;
     private int CurrentPosition = 0;
@@ -160,13 +160,29 @@ internal class Tokenizer : IEnumerable<Token>
             }
 
             // contents in comments are skipped
-            if (isCommented) continue;
+            if (CommentState == CommentState.Block && character == '*' && character + LookAhead(1) == "*/")
+            {
+                Read(1);
+                CommentState = CommentState.None;
+                continue;
+            }
+            if (CommentState != CommentState.None) continue;
 
             // check for a comment assignment 
-            if (character == '/' && character + LookAhead(1) == "//")
+            if (character == '/')
             {
-                isCommented = true;
-                continue;
+                var possibleCommentSign = character + LookAhead(1);
+
+                if (possibleCommentSign == "//")
+                {
+                    CommentState = CommentState.Line;
+                    continue;
+                }
+                else if (possibleCommentSign == "/*")
+                {
+                    CommentState = CommentState.Block;
+                    continue;
+                }
             }
 
             // all whitespace are considered as an end of the current token
@@ -349,6 +365,6 @@ internal class Tokenizer : IEnumerable<Token>
     {
         Row++;
         Column = 0;
-        isCommented = false;
+        if (CommentState == CommentState.Line) CommentState = CommentState.None;
     }
 }

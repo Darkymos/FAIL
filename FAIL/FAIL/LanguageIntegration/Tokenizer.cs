@@ -77,7 +77,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "for", TokenType.For },
 
         // Conversions
-        { "as", TokenType.As },
+        { "as", TokenType.Conversion },
     };
 
     private uint Row = 1;

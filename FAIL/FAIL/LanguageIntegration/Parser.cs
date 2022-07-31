@@ -2,9 +2,7 @@
 using FAIL.ElementTree.BinaryOperators;
 using FAIL.ElementTree.DataTypes;
 using FAIL.Exceptions;
-using System.Diagnostics;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace FAIL.LanguageIntegration;
 internal class Parser
@@ -19,6 +17,10 @@ internal class Parser
 
     // they just map tokens to types of the element tree
     // kinda redundant, but i haven't found a way to replace them yet
+    protected static readonly Dictionary<string, System.Type> ConversionOperatorMapper = new()
+    {
+        { "as", typeof(TypeConversion) },
+    };
     protected static readonly Dictionary<string, System.Type> DotOperatorMapper = new()
     {
         { "*", typeof(Multiplication) },
@@ -155,7 +157,7 @@ internal class Parser
     }
 
     // this all parses arithmetically
-    protected AST ParseTerm(Scope scope, Calculations calculations = (Calculations)15, AST? heap = null)
+    protected AST ParseTerm(Scope scope, Calculations calculations = (Calculations)31, AST? heap = null)
     {
         // just the desired categories will be parsed to allow custom rules like a hirarchy, standard (15) is just every category
 
@@ -163,6 +165,7 @@ internal class Parser
         if (calculations.HasFlag(Calculations.DotCalculations)) heap = ParseDotCalculation(scope, heap);
         if (calculations.HasFlag(Calculations.StrokeCalculations)) heap = ParseStrokeCalculation(scope, heap);
         if (calculations.HasFlag(Calculations.TestOperations)) heap = ParseTestOperations(scope, heap);
+        if (calculations.HasFlag(Calculations.Conversions)) heap = ParseConversion(scope, heap);
 
         return heap!;
     }
@@ -182,7 +185,7 @@ internal class Parser
                 AcceptAny();
                 subTerm = ParseTerm(scope,
                                     Calculations.DotCalculations | Calculations.StrokeCalculations,
-                                    new Substraction(new ElementTree.DataTypes.Integer(0),
+                                    new Substraction(new Integer(0),
                                                      ParseTerm(scope, Calculations.Term)));
             }
             else subTerm = ParseTerm(scope);
@@ -198,7 +201,7 @@ internal class Parser
 
             return ParseTerm(scope,
                              Calculations.DotCalculations | Calculations.StrokeCalculations,
-                             new Substraction(new ElementTree.DataTypes.Integer(0),
+                             new Substraction(new Integer(0),
                                               ParseTerm(scope, Calculations.Term)));
         }
 
@@ -232,7 +235,6 @@ internal class Parser
             if (IsTypeOf(TokenType.SelfAssignment)) return ParseSelfAssignment(scope, token!.Value); // test += 42;
             if (IsTypeOf(TokenType.OpeningParenthese)) return ParseFunctionCall(scope, token); // Test();
             if (IsTypeOf(TokenType.IncrementalOperator)) return ParseIncrementalOperator(scope, token!.Value); // test++;
-            if (IsTypeOf(TokenType.As)) return ParseConversion(scope, token!.Value); // test as string;
 
             return new Reference(Parser.GetValidVariable(scope, token!.Value.Value, token!.Value), token); 
         }
@@ -250,7 +252,7 @@ internal class Parser
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.Term);
             return ParseTerm(scope,
-                             Calculations.DotCalculations | Calculations.StrokeCalculations | Calculations.TestOperations,
+                             Calculations.DotCalculations | Calculations.StrokeCalculations | Calculations.Conversions | Calculations.TestOperations,
                              Activator.CreateInstance(DotOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
@@ -267,7 +269,7 @@ internal class Parser
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.DotCalculations | Calculations.Term);
             return ParseTerm(scope,
-                             Calculations.StrokeCalculations | Calculations.TestOperations,
+                             Calculations.StrokeCalculations | Calculations.Conversions | Calculations.TestOperations,
                              Activator.CreateInstance(StrokeOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
@@ -284,11 +286,26 @@ internal class Parser
             AcceptAny();
             var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
             return ParseTerm(scope, 
-                             Calculations.TestOperations, 
+                             Calculations.TestOperations | Calculations.Conversions, 
                              Activator.CreateInstance(TestOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no test operator (possibly an error)
+    }
+    protected AST? ParseConversion(Scope scope, AST? heap)
+    {
+        if (IsEOT() || !IsTypeOf(TokenType.Conversion)) return heap; // there is no conversion
+
+        if (ConversionOperatorMapper.ContainsKey(GetValue()))
+        {
+            var token = CurrentToken;
+            AcceptAny();
+            var newType = new ElementTree.Type(GetValue());
+            Accept(TokenType.DataType);
+            return Activator.CreateInstance(ConversionOperatorMapper[GetValue(token)], heap, newType, token);
+        }
+
+        return heap; // no conversion (possibly an error)
     }
 
     // everthing related to types (e.g. declarations)
@@ -403,19 +420,6 @@ internal class Parser
                                                        new Integer(1),
                                                        token));
     } // test++;
-    protected AST ParseConversion(Scope scope, Token token)
-    {
-        Accept(TokenType.As);
-
-        var variable = (Variable)GetValidVariable(scope, token.Value, token);
-        var newType = new ElementTree.Type(CurrentToken!.Value.Value);
-
-        if (newType.Name == "var") throw ExceptionCreator.SpecificTypeNeeded(variable.Name, token);
-
-        Accept(TokenType.DataType);
-
-        return new TypeConversion(variable, newType, token);
-    } // test as string;
 
     // block statements
     protected AST ParseIf(Scope scope, Token token)

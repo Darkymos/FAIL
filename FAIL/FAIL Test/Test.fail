@@ -226,5 +226,6 @@ log(combinedInteger);
 log(combinedString);
 var objectValue = integerValue as object;
 log(objectValue);
+log((5 + 10 as string) + "5");
 
 // end of program

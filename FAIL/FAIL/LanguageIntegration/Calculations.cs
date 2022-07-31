@@ -6,4 +6,5 @@ internal enum Calculations
     DotCalculations = 2,
     StrokeCalculations = 4,
     TestOperations = 8,
+    Conversions = 16,
 }

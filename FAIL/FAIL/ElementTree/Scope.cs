@@ -5,6 +5,7 @@ internal class Scope
     public Scope[] SharedScopes { get; }
 
 
+    public Scope(params Scope[] sharedScopes) : this(new(), sharedScopes) { }
     public Scope(List<AST> entries, params Scope[] sharedScopes)
     {
         Entries = entries;

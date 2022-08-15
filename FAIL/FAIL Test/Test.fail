@@ -85,7 +85,7 @@ void Log(string value) {
 	log(value);
 }
 Log("test");
-//Log(42);
+Log(42 as string); // implicit coversions + methods? -> implicit conversion to object should be possible
 //Log(42, "test"); wrong argument count!
 
 log("functions with return value -------------------------------------------");

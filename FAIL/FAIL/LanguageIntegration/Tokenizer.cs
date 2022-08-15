@@ -91,12 +91,12 @@ internal class Tokenizer : IEnumerable<Token>
     private int CurrentPosition = 0;
 
 
-    public Tokenizer(string file, string fileName)
+    public Tokenizer(string code, string fileName)
     {
-        File = file;
+        File = code;
         FileName = fileName;
 
-        Raw = file.ToCharArray();
+        Raw = code.ToCharArray();
     }
 
 

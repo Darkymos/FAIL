@@ -8,11 +8,10 @@ namespace FAIL.LanguageIntegration;
 internal class Parser
 {
     public Tokenizer Tokenizer { get; } // here we will emit our tokens to work with
+    protected IEnumerator<Token>? TokenEnumerator; // used to receive the tokens from the Tokenizer
 
-    // token storage
-    protected IEnumerator<Token>? TokenEnumerator;
-    protected Token? CurrentToken = null;
-    protected Token? LastToken = null;
+    protected Token? CurrentToken => TokenStack[^1];
+    protected Token? LastToken => TokenStack[^2];
     protected List<Token?> TokenStack = new();
 
     // they just map tokens to types of the element tree
@@ -54,94 +53,92 @@ internal class Parser
     };
 
 
-    public Parser(string file, string fileName)
+    public Parser(string code, string fileName)
     {
-        Tokenizer = new(file, fileName);
+        Tokenizer = new(code, fileName);
         AcceptAny(); // get the first token
     }
 
 
-    public AST? Parse()
+    public CommandList Parse()
     {
-        if (IsEOT()) return null; // empty file
+        if (IsEOT()) return new(); // empty file
 
-        var ast = ParseCommandList(TokenType.EndOfStatement); // top level statements
-        return IsEOT() ? ast : throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value); // is there a character, that shouldn't be there?
+        var topLevelStatements = ParseCommandList(TokenType.EndOfStatement);
+
+        // is there a character, that shouldn't be there (a non finished command)?
+        return IsEOT() ? topLevelStatements : throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value); 
     }
 
     protected CommandList ParseCommandList(TokenType endOfStatementSign, TokenType? endOfBlockSign = null, params Scope[] shared)
     {
-        var commands = new Scope(new(), shared); // block/top level scope
+        var commands = new Scope(new(), shared); // owned scope
 
-        // the end of a block is either the end of the file (top level) or a specific character
-        while (!IsEOT() && (endOfBlockSign is null || !IsTypeOf(endOfBlockSign.Value))) 
-            commands.Add(ParseCommand(commands, endOfStatementSign, endOfBlockSign)!);
+        bool IsEnd()
+        {
+            if (IsEOT() && endOfBlockSign is not null)
+                throw ExceptionCreator.UnexpectedToken(CurrentToken!.Value);
+
+            var endOfBlock = endOfBlockSign is not null && IsTypeOf(endOfBlockSign.Value);
+            var topLevel = IsEOT();
+
+            return endOfBlock || topLevel;
+        }
+        while (!IsEnd()) commands.Add(ParseCommand(commands, endOfStatementSign, endOfBlockSign)!);
 
         // most often TokenType.ClosingBracket
         if (endOfBlockSign is not null) Accept(endOfBlockSign.Value);
 
         return new CommandList(commands);
     }
-    protected AST ParseCommand(Scope scope, 
-                               TokenType? endOfStatementSign = null, 
-                               TokenType? endOfBlockSign = null)
+    protected AST ParseCommand(Scope scope, TokenType? endOfStatementSign = null, TokenType? endOfBlockSign = null)
     {
-        AST result;
         var isBlock = false; // kinda redundant, but still there, until a better solution is found
 
-        switch (CurrentToken!.Value.Type)
+        AST ParseBlockStatement(Scope scope, out bool isBlock)
         {
-            // types or their possible alternatives
-            case TokenType.Var:
-            case TokenType.Void:
-            case TokenType.DataType:
-                result = ParseType(scope, out isBlock);
-                break;
-
-            // block statements
-            case TokenType.If:
-            case TokenType.While:
-            case TokenType.For:
-                isBlock = true;
-                var token3 = CurrentToken!.Value;
-                AcceptAny();
-                Accept(TokenType.OpeningParenthese);
-                result = (GetType().GetMethod($"Parse{token3.Type}", BindingFlags.NonPublic | BindingFlags.Instance)!
-                                   .Invoke(this, new object[] { scope, token3 }) as AST)!;
-                break;
-
-            // simple built-in functions (should be easier to expand in the future)
-            case TokenType.Log:
-            case TokenType.Input:
-                var token = CurrentToken!.Value;
-                AcceptAny();
-                Accept(TokenType.OpeningParenthese);
-                result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token.Type}")!, ParseCommand(scope, TokenType.ClosingParenthese), token) as AST)!;
-                break;
-
-            // simple statements following a keyword
-            case TokenType.Return:
-                var token2 = CurrentToken!.Value;
-                AcceptAny();
-                result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token2.Type}")!, ParseCommand(scope, endOfStatementSign), token2) as AST)!;
-                break;
-
-            // simple keywords without any additional information
-            case TokenType.Continue:
-            case TokenType.Break:
-                result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{CurrentToken!.Value.Type}")!, CurrentToken) as AST)!;
-                AcceptAny();
-                break;
-
-            // all other stuff will be arithmetically parsed
-            default:
-                result = ParseTerm(scope);
-                break;
+            isBlock = true;
+            var token3 = CurrentToken!.Value;
+            AcceptAny();
+            Accept(TokenType.OpeningParenthese);
+            return (GetType().GetMethod($"Parse{token3.Type}", BindingFlags.NonPublic | BindingFlags.Instance)!
+                             .Invoke(this, new object[] { scope, token3 }) as AST)!;
         }
+        AST ParseBuiltInFunction(Scope scope)
+        {
+            var token = CurrentToken!.Value;
+            AcceptAny();
+            Accept(TokenType.OpeningParenthese);
+            return (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token.Type}")!, 
+                                             ParseCommand(scope, TokenType.ClosingParenthese), token) as AST)!;
+        } // should be easier to expand in the future
+        AST ParseSimpleStatement(Scope scope)
+        {
+            var token2 = CurrentToken!.Value;
+            AcceptAny();
+            return (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token2.Type}")!, 
+                                             ParseCommand(scope, endOfStatementSign), token2) as AST)!;
+        }
+        AST ParseSimpleKeyword(Scope scope)
+        {
+            var result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{CurrentToken!.Value.Type}")!, CurrentToken) as AST)!;
+            AcceptAny();
+            return result;
+        }
+
+        var result = CurrentToken!.Value.Type switch
+        {
+            TokenType.Var or TokenType.Void or TokenType.DataType => ParseType(scope, out isBlock),
+            TokenType.If or TokenType.While or TokenType.For => ParseBlockStatement(scope, out isBlock),
+            TokenType.Log or TokenType.Input => ParseBuiltInFunction(scope),
+            TokenType.Return => ParseSimpleStatement(scope),
+            TokenType.Continue or TokenType.Break => ParseSimpleKeyword(scope),
+            _ => ParseTerm(scope)
+        };
 
         if (endOfStatementSign is not null // command must have a endOfStatementSign
             && !isBlock
-            && !(endOfBlockSign is not null && IsTypeOf(endOfBlockSign.Value))) // is ther an endOfBlockSign (like TokenType.ClosingParenthese, see e.g. 'testCommand' of an if)?
+            && (endOfBlockSign is null || !IsTypeOf(endOfBlockSign.Value))) // is ther an endOfBlockSign (like TokenType.ClosingParenthese, see e.g. 'testCommand' of an if)?
             Accept(endOfStatementSign!.Value);
 
         return result;
@@ -451,7 +448,7 @@ internal class Parser
     }
     protected AST ParseFor(Scope scope, Token token)
     {
-        var internalScope = new Scope(new()); // special scope for the iterator variable
+        var internalScope = new Scope(); // special scope for the iterator variable
         var iteratorVariable = ParseCommand(internalScope, TokenType.EndOfStatement); // var i = 0;
         internalScope.Add(iteratorVariable);
         var iteratorTest = ParseCommand(internalScope, TokenType.EndOfStatement); // i < length;
@@ -468,7 +465,7 @@ internal class Parser
             Accept(TokenType.OpeningBracket);
             return ParseCommandList(TokenType.EndOfStatement, TokenType.ClosingBracket, scopes);
         }
-        else return new(new(new() { ParseCommand(new(new(), scopes)) }));
+        else return new(new Scope(new List<AST>() { ParseCommand(new Scope(scopes)) }));
     }
 
     // type-system-related stuff
@@ -517,19 +514,17 @@ internal class Parser
     {
         if (TokenEnumerator is null) TokenEnumerator = Tokenizer.GetEnumerator(); // initialize the TokenEnumerator
 
-        LastToken = CurrentToken; // LastToken could be useful, but there is also the TokenStack
+        // LastToken could be useful, but there is also the TokenStack
 
         try
         {
             // get next token
             TokenEnumerator.MoveNext(); 
-            CurrentToken = TokenEnumerator.Current;
-
-            TokenStack.Add(CurrentToken);
+            TokenStack.Add(TokenEnumerator.Current);
         }
         catch (StopIterationException) // end of file reached
         {
-            CurrentToken = null;
+            TokenStack.Add(null);
             return null;
         }
 
@@ -541,19 +536,15 @@ internal class Parser
 
         if (!expected.HasFlag(CurrentToken!.Value.Type)) throw ExceptionCreator.WrongToken(CurrentToken!.Value, expected);
 
-        LastToken = CurrentToken; // LastToken could be useful, but there is also the TokenStack
-
         try
         {
             // get next token
             TokenEnumerator.MoveNext();
-            CurrentToken = TokenEnumerator.Current;
-
-            TokenStack.Add(CurrentToken);
+            TokenStack.Add(TokenEnumerator.Current);
         }
         catch (StopIterationException) // end of file reached
         {
-            CurrentToken = null;
+            TokenStack.Add(null);
             return null;
         }
 

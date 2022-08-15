@@ -3,9 +3,10 @@
 namespace FAIL.ElementTree;
 internal class CommandList : AST
 {
-    public Scope Commands { get; }        
+    public Scope Commands { get; }
 
 
+    public CommandList(Token? token = null) : this(new Scope(), token) { }
     public CommandList(Scope commands, Token? token = null) : base(token) => Commands = commands;
 
 

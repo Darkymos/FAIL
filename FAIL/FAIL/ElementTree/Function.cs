@@ -18,38 +18,23 @@ internal class Function : AST
     {
         ValidateOverload(overload);
         Overloads.Add(overload);
-        if (Current is null) Current = Overloads.First();
+        Current ??= Overloads.First();
     }
     private void ValidateOverload(FunctionOverload overload)
     {
-        var sameParameterCount = Overloads.Where(x => x.Parameters.Commands.Entries.Count == overload.Parameters.Commands.Entries.Count);
-        
-        foreach (var functionOverload in sameParameterCount)
+        foreach (var functionOverload in Overloads.Where(x => x.Parameters.Commands.Entries.Count == overload.Parameters.Commands.Entries.Count))
         {
-            var isValid = false;
-
             for (var i = 0; i < functionOverload.Parameters.Commands.Entries.Count; i++)
-            {
-                if (functionOverload.Parameters.Commands.Entries[i].GetType() != overload.Parameters.Commands.Entries[i].GetType())
-                {
-                    isValid = true;
-                    break;
-                }
-            }
+                if (functionOverload.Parameters.Commands.Entries[i].GetType() != overload.Parameters.Commands.Entries[i].GetType()) return;
 
-            if (!isValid) throw ExceptionCreator.OverloadAlreadyExists(Name);
+            throw ExceptionCreator.OverloadAlreadyExists(Name);
         }
     }
     public void SetCurrentOverload(FunctionOverload overload) => Current = Overloads[Overloads.IndexOf(overload)];
-    public bool HasOverload(CommandList parameters)
-    {
-        return Overloads.Where(x => ValidateParameters(x.Parameters.Commands.Entries, parameters.Commands.Entries))
-                        .Any();
-    }
+    public bool HasOverload(CommandList parameters) 
+        => Overloads.Any(x => ValidateParameters(x.Parameters.Commands.Entries, parameters.Commands.Entries));
     public FunctionOverload? GetOverload(CommandList parameters) 
-        => HasOverload(parameters) 
-            ? Overloads.Where(x => ValidateParameters(x.Parameters.Commands.Entries, parameters.Commands.Entries)).FirstOrDefault() 
-            : null;
+        => Overloads.FirstOrDefault(x => ValidateParameters(x.Parameters.Commands.Entries, parameters.Commands.Entries));
 
     private static bool ValidateParameters(List<AST> expected, List<AST> given)
     {
@@ -79,7 +64,7 @@ internal class Function : AST
     {
         try
         {
-            Current?.Body.Call();
+            _ = (Current?.Body.Call());
             return null;
         }
         catch (ReturnException ex)

@@ -17,7 +17,7 @@ internal class Logger : IDisposable
         stream.AutoFlush = true;
     }
 
-    
+
     public bool Log(dynamic value, LogLevel level)
     {
         if (level < Level) return false;

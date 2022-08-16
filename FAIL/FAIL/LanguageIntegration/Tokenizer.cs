@@ -65,7 +65,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "string", TokenType.DataType },
         { "bool", TokenType.DataType },
 
-        // Decissions
+        // Decisions
         { "return", TokenType.Return },
         { "if", TokenType.If },
         { "else", TokenType.Else },
@@ -119,7 +119,7 @@ internal class Tokenizer : IEnumerable<Token>
             // everything in a string is part of it
             if (CurrentState == State.String)
             {
-                Buffer.Append(character);
+                _ = Buffer.Append(character);
 
                 if (character == '\n')
                 {
@@ -162,7 +162,7 @@ internal class Tokenizer : IEnumerable<Token>
             // contents in comments are skipped
             if (CommentState == CommentState.Block && character == '*' && character + LookAhead(1) == "*/")
             {
-                Read(1);
+                _ = Read(1);
                 CommentState = CommentState.None;
                 continue;
             }
@@ -192,7 +192,7 @@ internal class Tokenizer : IEnumerable<Token>
                 if (possibleToken is not null) yield return possibleToken.Value;
                 continue;
             }
-            
+
             // check for any kind of operator specified in the Operators dictionary
             var tokens = CheckForOperator(character).ToList();
             if (tokens.Count > 0)
@@ -206,18 +206,18 @@ internal class Tokenizer : IEnumerable<Token>
             {
                 if (character == 't' && character + LookAhead(3) == "true")
                 {
-                    Read(3);
+                    _ = Read(3);
                     Buffer = new();
                     yield return new(TokenType.Boolean, true, Row, Column, FileName);
                     continue;
                 }
                 if (character == 'f' && character + LookAhead(4) == "false")
                 {
-                    Read(4);
+                    _ = Read(4);
                     Buffer = new();
                     yield return new(TokenType.Boolean, false, Row, Column, FileName);
                     continue;
-                } 
+                }
             }
 
             // state maschine for different data types
@@ -225,7 +225,7 @@ internal class Tokenizer : IEnumerable<Token>
             {
                 if (CurrentState == State.Start)
                 {
-                    Buffer.Append(character);
+                    _ = Buffer.Append(character);
 
                     if (character == '"')
                     {
@@ -244,13 +244,13 @@ internal class Tokenizer : IEnumerable<Token>
                 {
                     if (char.IsDigit(character))
                     {
-                        Buffer.Append(character);
+                        _ = Buffer.Append(character);
                         break;
                     }
 
                     if (character == '.')
                     {
-                        Buffer.Append(character);
+                        _ = Buffer.Append(character);
                         CurrentState = State.Double;
                         break;
                     }
@@ -264,7 +264,7 @@ internal class Tokenizer : IEnumerable<Token>
                 {
                     if (char.IsDigit(character))
                     {
-                        Buffer.Append(character);
+                        _ = Buffer.Append(character);
                         break;
                     }
 
@@ -275,7 +275,7 @@ internal class Tokenizer : IEnumerable<Token>
                 }
                 if (CurrentState == State.Text)
                 {
-                    Buffer.Append(character);
+                    _ = Buffer.Append(character);
                     break;
                 }
             }
@@ -304,14 +304,14 @@ internal class Tokenizer : IEnumerable<Token>
         else if (CurrentState == State.Char) token = new(TokenType.String, Buffer[1], Row, Column - (uint)Buffer.Length, FileName);
         else
         {
-            if (KeyWords.ContainsKey(Buffer.ToString()))
+            if (KeyWords.ContainsKey(Buffer.ToString())) token = Buffer.ToString() switch
             {
-                if (Buffer.ToString() == "bool") token = new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName);
-                else if (Buffer.ToString() == "string") token = new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName);
-                else if (Buffer.ToString() == "int") token = new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName);
-                else if (Buffer.ToString() == "double") token = new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName);
-                else token = new(KeyWords[Buffer.ToString()], Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName); 
-            }
+                "bool" => new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName),
+                "string" => new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName),
+                "int" => new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName),
+                "double" => new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName),
+                _ => new(KeyWords[Buffer.ToString()], Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName),
+            };
             else token = new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName);
         }
 
@@ -352,7 +352,7 @@ internal class Tokenizer : IEnumerable<Token>
                 if (operatorString == op)
                 {
                     yield return ClearBuffer();
-                    Read(op.Length - 1);
+                    _ = Read(op.Length - 1);
                     yield return new(Operators[op], op, Row, Column, FileName);
                     yield break;
                 }

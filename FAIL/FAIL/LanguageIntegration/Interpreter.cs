@@ -6,7 +6,9 @@ internal class Interpreter
 {
     private readonly string[] FileNames;
     private readonly AST? AST;
+#pragma warning disable IDE0052 // Remove unread private members
     private readonly dynamic? Result;
+#pragma warning restore IDE0052 // Remove unread private members
 
     public static Logger? Logger { get; private set; }
 
@@ -18,14 +20,11 @@ internal class Interpreter
 
         var code = new StringBuilder();
 
-        foreach (var fileName in FileNames)
-        {
-            code.Append(File.OpenText(fileName).ReadToEnd());
-        }
+        foreach (var fileName in FileNames) _ = code.Append(File.OpenText(fileName).ReadToEnd());
 
         AST = new Parser(code.ToString(), fileNames[^1]).Parse();
         Result = AST?.Call();
 
-        Logger.Log(AST!, LogLevel.Info);
+        _ = Logger.Log(AST!, LogLevel.Info);
     }
 }

@@ -22,11 +22,9 @@ internal class CommandList : AST
     {
         var results = new List<dynamic?>();
 
-        foreach (var command in Commands.Entries)
+        foreach (var command in Commands.Entries.Where(command => command is not (null or Variable or Function)))
         {
-            if (command as Variable is not null || command as Function is not null) continue;
-
-            results.Add(command?.Call());
+            results.Add(command.Call());
             Interpreter.Logger?.Log(results[^1], command, LogLevel.Info);
         }
 

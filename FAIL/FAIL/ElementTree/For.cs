@@ -23,14 +23,14 @@ internal class For : AST
     {
         try
         {
-            IteratorVariable.Call();
+            _ = IteratorVariable.Call();
 
             while (IteratorTest.Call()!.Value)
             {
-                try 
+                try
                 {
-                    Body.Call(); 
-                    IteratorAction.Call();
+                    _ = Body.Call();
+                    _ = IteratorAction.Call();
                 }
                 catch (ContinueException) { continue; }
             }

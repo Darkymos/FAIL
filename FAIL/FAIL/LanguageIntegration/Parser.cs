@@ -3,6 +3,7 @@ using FAIL.ElementTree.BinaryOperators;
 using FAIL.ElementTree.DataTypes;
 using FAIL.Exceptions;
 using System.Reflection;
+using static FAIL.BuiltIn.BuiltInFunctions;
 
 namespace FAIL.LanguageIntegration;
 internal class Parser
@@ -104,14 +105,6 @@ internal class Parser
             return (GetType().GetMethod($"Parse{token3.Type}", BindingFlags.NonPublic | BindingFlags.Instance)!
                              .Invoke(this, new object[] { scope, token3 }) as AST)!;
         }
-        AST ParseBuiltInFunction(Scope scope)
-        {
-            var token = CurrentToken!.Value;
-            _ = AcceptAny();
-            _ = Accept(TokenType.OpeningParenthese);
-            return (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{token.Type}")!,
-                                             ParseCommand(scope, TokenType.ClosingParenthese), token) as AST)!;
-        }
         AST ParseSimpleStatement(Scope scope)
         {
             var token2 = CurrentToken!.Value;
@@ -130,7 +123,6 @@ internal class Parser
         {
             TokenType.Var or TokenType.Void or TokenType.DataType => ParseType(scope, out isBlock),
             TokenType.If or TokenType.While or TokenType.For => ParseBlockStatement(scope, out isBlock),
-            TokenType.Log or TokenType.Input => ParseBuiltInFunction(scope),
             TokenType.Return => ParseSimpleStatement(scope),
             TokenType.Continue or TokenType.Break => ParseSimpleKeyword(),
             _ => ParseTerm(scope)
@@ -403,7 +395,9 @@ internal class Parser
     {
         _ = Accept(TokenType.OpeningParenthese);
         var parameters = ParseCommandList(TokenType.Separator, TokenType.ClosingParenthese, scope);
-        return new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters, token);
+        return Functions.ContainsKey(token!.Value.Value)
+            ? new BuiltInFunctionCall(token!.Value.Value, parameters)
+            : (AST)new FunctionCall(GetFunctionFromScope(scope, token!.Value.Value), parameters, token);
     } // Test();
     protected AST ParseIncrementalOperator(Scope scope, Token token)
     {

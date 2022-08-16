@@ -50,10 +50,6 @@ internal class Tokenizer : IEnumerable<Token>
     };
     public static Dictionary<string, TokenType> KeyWords { get; } = new()
     {
-        // Peripherals
-        { "log", TokenType.Log },
-        { "input", TokenType.Input },
-
         // Special types
         { "var", TokenType.Var },
         { "void", TokenType.Void },

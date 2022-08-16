@@ -20,7 +20,7 @@ internal class While : AST
         try
         {
             while (TestCommand.Call()!.Value) 
-                try { Body.Call(); }
+                try { _ = Body.Call(); }
                 catch (ContinueException) { continue; }
 
             return null;

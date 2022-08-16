@@ -6,9 +6,9 @@ internal class InvalidTypeException : FAILException
     public ElementTree.Type Expected { get; }
 
 
-    public InvalidTypeException(string targetName, 
-                                ElementTree.Type given, 
-                                ElementTree.Type expected, 
+    public InvalidTypeException(string targetName,
+                                ElementTree.Type given,
+                                ElementTree.Type expected,
                                 string message, uint line, uint column, string file) : base(message, line, column, file)
     {
         TargetName = targetName;

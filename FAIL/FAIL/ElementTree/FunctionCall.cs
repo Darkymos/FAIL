@@ -30,9 +30,6 @@ internal class FunctionCall : AST
         var assignTo = Function.Current!.Parameters.Commands.Entries;
         var values = Parameters.Commands.Entries;
 
-        for (var i = 0; i < values.Count; i++)
-        {
-            (assignTo[i] as Variable)!.Reassign(values[i]);
-        }
+        for (var i = 0; i < values.Count; i++) (assignTo[i] as Variable)!.Reassign(values[i]);
     }
 }

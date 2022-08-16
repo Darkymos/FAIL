@@ -4,7 +4,7 @@ using Microsoft.CSharp.RuntimeBinder;
 namespace FAIL.ElementTree.BinaryOperators;
 internal class Equal : BinaryOperator
 {
-    public Equal(AST? firstParameter, AST? secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)
+    public Equal(AST firstParameter, AST secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)
     {
     }
 

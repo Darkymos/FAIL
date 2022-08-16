@@ -9,11 +9,7 @@ internal class Reference : AST
     public Reference(Variable variable, Token? token = null) : base(token) => Variable = variable;
 
 
-    public override DataTypes.Object? Call()
-    {
-        if (!Variable.IsSet()) throw ExceptionCreator.UseOfUnassignedVariable(Variable.Name, Token);
-        return Variable.Call();
-    }
+    public override DataTypes.Object? Call() => Variable.IsSet() ? Variable.Call() : throw ExceptionCreator.UseOfUnassignedVariable(Variable.Name, Token);
 
     public override Type GetType() => Variable.GetType();
 }

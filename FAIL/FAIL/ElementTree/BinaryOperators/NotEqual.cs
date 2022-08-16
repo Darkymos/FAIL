@@ -4,7 +4,7 @@ using Microsoft.CSharp.RuntimeBinder;
 namespace FAIL.ElementTree.BinaryOperators;
 internal class NotEqual : BinaryOperator
 {
-    public NotEqual(AST? firstParameter, AST? secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)
+    public NotEqual(AST firstParameter, AST secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)
     {
     }
 

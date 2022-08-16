@@ -5,6 +5,7 @@ internal class Scope
     public Scope[] SharedScopes { get; }
 
 
+    public Scope(params Scope[] sharedScopes) : this(new(), sharedScopes) { }
     public Scope(List<AST> entries, params Scope[] sharedScopes)
     {
         Entries = entries;
@@ -14,17 +15,12 @@ internal class Scope
 
     public AST? Search(Func<AST, bool> predicate)
     {
-        var entry = Entries.Where(predicate).FirstOrDefault();
-        if (entry is null)
-        {
-            foreach (var scope in SharedScopes)
-            {
-                entry = scope.Search(predicate);
-                if (entry is not null) return entry;
-            }
-        }
+        var entry = Entries.FirstOrDefault(predicate);
+        if (entry is not null) return entry;
 
-        return entry;
+        foreach (var scope in SharedScopes) if (scope.Search(predicate) is (not null) and AST result) return result;
+
+        return null;
     }
     public void Add(AST item) => Entries.Add(item);
 }

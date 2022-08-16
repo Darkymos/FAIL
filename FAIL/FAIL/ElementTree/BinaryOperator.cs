@@ -3,11 +3,11 @@
 namespace FAIL.ElementTree;
 internal abstract class BinaryOperator : AST
 {
-    public AST? FirstParameter { get; init; }
-    public AST? SecondParameter { get; init; }
+    public AST FirstParameter { get; init; }
+    public AST SecondParameter { get; init; }
 
 
-    public BinaryOperator(AST? firstParameter, AST? secondParameter, Token? token = null) : base(token)
+    public BinaryOperator(AST firstParameter, AST secondParameter, Token? token = null) : base(token)
     {
         FirstParameter = firstParameter;
         SecondParameter = secondParameter;
@@ -22,10 +22,11 @@ internal abstract class BinaryOperator : AST
 
     protected Type GetCombinedType()
     {
-        if (FirstParameter!.GetType() == SecondParameter!.GetType()) return FirstParameter.GetType();
-        if (FirstParameter!.GetType().Name == nameof(DataTypes.Double) 
-            || SecondParameter!.GetType().Name == nameof(DataTypes.Double)) 
+        if (FirstParameter.GetType() == SecondParameter.GetType()) return FirstParameter.GetType();
+        if (FirstParameter.GetType().Name == nameof(DataTypes.Double) || SecondParameter.GetType().Name == nameof(DataTypes.Double))
             return new(nameof(DataTypes.Double));
         return new(nameof(String));
+
+
     }
 }

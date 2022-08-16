@@ -3,7 +3,7 @@
 namespace FAIL.ElementTree.BinaryOperators;
 internal class Substraction : BinaryOperator
 {
-    public Substraction(AST? firstParameter, AST? secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)
+    public Substraction(AST firstParameter, AST secondParameter, Token? token = null) : base(firstParameter, secondParameter, token)
     {
     }
 

@@ -1,0 +1,13 @@
+﻿; Registering the package
+[$RootKey$\InstalledProducts\FAIL_LanguagePackage]
+"Package"="{7125ee04-1e9e-4daa-a907-2b492c03e249}"
+[$RootKey$\BindingPaths\{7125ee04-1e9e-4daa-a907-2b492c03e249}]
+"$PackageFolder$"=""
+
+; Registering the TextMate grammar
+[$RootKey$\TextMate\Repositories]
+"FAIL_Language"="$PackageFolder$\Syntaxes"
+
+; Match file extensions with icons. See full icon list at https://glyphlist.azurewebsites.net/knownmonikers/
+[$RootKey$\ShellFileAssociations\.fail]
+"DefaultIconMoniker"="KnownMonikers.Airbrush"

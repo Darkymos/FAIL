@@ -65,7 +65,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "string", TokenType.DataType },
         { "bool", TokenType.DataType },
 
-        // Decissions
+        // Decisions
         { "return", TokenType.Return },
         { "if", TokenType.If },
         { "else", TokenType.Else },

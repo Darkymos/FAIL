@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>fail</string>
+	</array>
+	<key>name</key>
+	<string>FAIL</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>string.quoted.double.fail</string>
+			<key>begin</key>
+			<string>&quot;</string>
+			<key>end</key>
+			<string>&quot;</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>name</key>
+					<string>constant.character.escape.fail</string>
+					<key>match</key>
+					<string>\\.</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>comment.line.double-slash.fail</string>
+			<key>match</key>
+			<string>//.*</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>comment.block.fail</string>
+			<key>begin</key>
+			<string>/\*</string>
+			<key>end</key>
+			<string>\*/</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>constant.numeric.fail</string>
+			<key>match</key>
+			<string>-?[0-9]+\.?([0-9]?)+</string>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>constant.language.fail</string>
+			<key>match</key>
+			<string>(true|false|void|var)</string>
+		</dict>
+	</array>
+	<key>uuid</key>
+	<string>FA4F22B4-180D-417B-B67E-EEEF3F5A9BA4</string>
+	<key>scopeName</key>
+	<string>source.fail</string>
+	<key>foldingStartMartker</key>
+	<string>{</string>
+	<key>foldingStopMarker</key>
+	<string>}</string>
+</dict>
+</plist>

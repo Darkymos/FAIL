@@ -237,5 +237,7 @@ log(firstValue || secondValue);
 log(firstValue && secondValue);
 log((firstValue or secondValue) and firstValue);
 log((firstValue and secondValue) or secondValue);
+log(!firstValue);
+log(not secondValue);
 
 // end of program

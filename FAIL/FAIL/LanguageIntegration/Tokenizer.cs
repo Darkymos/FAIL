@@ -13,10 +13,6 @@ internal class Tokenizer : IEnumerable<Token>
     public string FileName { get; }
     public static Dictionary<string, TokenType> Operators { get; } = new()
     {
-        // Logical
-        { "||", TokenType.LogicalOperator },
-        { "&&", TokenType.LogicalOperator },
-
         // Testing
         { "==", TokenType.TestOperator },
         { "!=", TokenType.TestOperator },
@@ -24,6 +20,11 @@ internal class Tokenizer : IEnumerable<Token>
         { "<=", TokenType.TestOperator },
         { ">", TokenType.TestOperator },
         { "<", TokenType.TestOperator },
+
+        // Logical
+        { "||", TokenType.LogicalOperator },
+        { "&&", TokenType.LogicalOperator },
+        { "!", TokenType.LogicalOperator },
 
         // Self Assignments
         { "+=", TokenType.SelfAssignment },
@@ -82,6 +83,7 @@ internal class Tokenizer : IEnumerable<Token>
         // Logical operators
         { "or", TokenType.LogicalOperator },
         { "and", TokenType.LogicalOperator },
+        { "not", TokenType.LogicalOperator },
     };
 
     private uint Row = 1;

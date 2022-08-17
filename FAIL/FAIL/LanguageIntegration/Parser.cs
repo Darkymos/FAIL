@@ -1,6 +1,7 @@
 ﻿using FAIL.ElementTree;
 using FAIL.ElementTree.BinaryOperators;
 using FAIL.ElementTree.DataTypes;
+using FAIL.ElementTree.UnaryOperators;
 using FAIL.Exceptions;
 using System.Reflection;
 using static FAIL.BuiltIn.BuiltInFunctions;
@@ -180,14 +181,21 @@ internal class Parser
             return subTerm;
         }
 
-        // negative number hack (0 - value -> substraction)
-        if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
+        // unary stroke operation hack (0 - value -> Negation(value))
+        if (IsTypeOf(TokenType.StrokeCalculation))
         {
+            var operatorToken = CurrentToken;
             _ = Accept(TokenType.StrokeCalculation);
+            return HasValue(operatorToken, "+")
+                ? ParseArithmentic(scope, ParseArithmentic(scope, Calculations.Term))
+                : ParseArithmentic(scope, new Negation(ParseArithmentic(scope, Calculations.Term)));
+        }
 
-            return ParseArithmentic(scope,
-                                    new Substraction(new Integer(0),
-                                                     ParseArithmentic(scope, Calculations.Term)));
+        // not hack (!value -> Not(value) / not value -> Not(value))
+        if (IsTypeOf(TokenType.LogicalOperator) && (HasValue("not") || HasValue("!")))
+        {
+            _ = Accept(TokenType.LogicalOperator);
+            return ParseArithmentic(scope, new Not(ParseArithmentic(scope, Calculations.Term)));
         }
 
         // currently a bit redundant code, until the type system is finally implemented

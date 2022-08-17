@@ -1,6 +1,7 @@
 ﻿using FAIL.ElementTree;
 using FAIL.ElementTree.BinaryOperators;
 using FAIL.ElementTree.DataTypes;
+using FAIL.ElementTree.UnaryOperators;
 using FAIL.Exceptions;
 using System.Reflection;
 using static FAIL.BuiltIn.BuiltInFunctions;
@@ -39,6 +40,13 @@ internal class Parser
         { "<=", typeof(LessThanOrEqual) },
         { ">", typeof(GreaterThan) },
         { "<", typeof(LessThan) },
+    };
+    protected static readonly Dictionary<string, System.Type> LogicalOperatorMapper = new()
+    {
+        { "or", typeof(Or) },
+        { "and", typeof(And) },
+        { "||", typeof(Or) },
+        { "&&", typeof(And) },
     };
     protected static readonly Dictionary<string, System.Type> SelfAssignmentOperatorMapper = new()
     {
@@ -125,7 +133,7 @@ internal class Parser
             TokenType.If or TokenType.While or TokenType.For => ParseBlockStatement(scope, out isBlock),
             TokenType.Return => ParseSimpleStatement(scope),
             TokenType.Continue or TokenType.Break => ParseSimpleKeyword(),
-            _ => ParseTerm(scope)
+            _ => ParseArithmentic(scope)
         };
 
         if (endOfStatementSign is not null // command must have a endOfStatementSign
@@ -146,7 +154,8 @@ internal class Parser
     }
 
     // this all parses arithmetically
-    protected AST ParseTerm(Scope scope, Calculations calculations = (Calculations)31, AST? heap = null)
+    protected AST ParseArithmentic(Scope scope, AST? heap = null) => ParseArithmentic(scope, CalculationsExtensions.All, heap);
+    protected AST ParseArithmentic(Scope scope, Calculations calculations, AST? heap = null)
     {
         // just the desired categories will be parsed to allow custom rules like a hirarchy, standard (15) is just every category
 
@@ -154,6 +163,7 @@ internal class Parser
         if (calculations.HasFlag(Calculations.DotCalculations)) heap = ParseDotCalculation(scope, heap);
         if (calculations.HasFlag(Calculations.StrokeCalculations)) heap = ParseStrokeCalculation(scope, heap);
         if (calculations.HasFlag(Calculations.TestOperations)) heap = ParseTestOperations(scope, heap);
+        if (calculations.HasFlag(Calculations.LogicalOperations)) heap = ParseLogicalOperations(scope, heap);
         if (calculations.HasFlag(Calculations.Conversions)) heap = ParseConversion(heap);
 
         return heap!;
@@ -165,33 +175,27 @@ internal class Parser
         // add one level on top
         if (IsTypeOf(TokenType.OpeningParenthese))
         {
-            _ = AcceptAny();
-            AST? subTerm;
-
-            // negative number hack (0 - value -> substraction)
-            if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
-            {
-                _ = AcceptAny();
-                subTerm = ParseTerm(scope,
-                                    Calculations.DotCalculations | Calculations.StrokeCalculations,
-                                    new Substraction(new Integer(0),
-                                                     ParseTerm(scope, Calculations.Term)));
-            }
-            else subTerm = ParseTerm(scope);
-
+            _ = Accept(TokenType.OpeningParenthese);
+            var subTerm = ParseArithmentic(scope);
             _ = Accept(TokenType.ClosingParenthese);
             return subTerm;
         }
 
-        // negative number hack (0 - value -> substraction)
-        if (IsTypeOf(TokenType.StrokeCalculation) && HasValue("-"))
+        // unary stroke operation hack (0 - value -> Negation(value))
+        if (IsTypeOf(TokenType.StrokeCalculation))
         {
-            _ = AcceptAny();
+            var operatorToken = CurrentToken;
+            _ = Accept(TokenType.StrokeCalculation);
+            return HasValue(operatorToken, "+")
+                ? ParseArithmentic(scope, ParseArithmentic(scope, Calculations.Term))
+                : ParseArithmentic(scope, new Negation(ParseArithmentic(scope, Calculations.Term)));
+        }
 
-            return ParseTerm(scope,
-                             Calculations.DotCalculations | Calculations.StrokeCalculations,
-                             new Substraction(new Integer(0),
-                                              ParseTerm(scope, Calculations.Term)));
+        // not hack (!value -> Not(value) / not value -> Not(value))
+        if (IsTypeOf(TokenType.LogicalOperator) && (HasValue("not") || HasValue("!")))
+        {
+            _ = Accept(TokenType.LogicalOperator);
+            return ParseArithmentic(scope, new Not(ParseArithmentic(scope, Calculations.Term)));
         }
 
         // currently a bit redundant code, until the type system is finally implemented
@@ -239,10 +243,10 @@ internal class Parser
         {
             var token = CurrentToken;
             _ = AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.Term);
-            return ParseTerm(scope,
-                             Calculations.DotCalculations | Calculations.StrokeCalculations | Calculations.Conversions | Calculations.TestOperations,
-                             Activator.CreateInstance(DotOperatorMapper[GetValue(token)], heap, secondParameter, token));
+            var secondParameter = ParseArithmentic(scope, Calculations.DotCalculations.GetAbove());
+            return ParseArithmentic(scope,
+                                    Calculations.DotCalculations.GetSelfAndBelow(),
+                                    Activator.CreateInstance(DotOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no dot calculation (possibly an error)
@@ -256,9 +260,9 @@ internal class Parser
         {
             var token = CurrentToken;
             _ = AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.DotCalculations | Calculations.Term);
-            return ParseTerm(scope,
-                             Calculations.StrokeCalculations | Calculations.Conversions | Calculations.TestOperations,
+            var secondParameter = ParseArithmentic(scope, Calculations.StrokeCalculations.GetAbove());
+            return ParseArithmentic(scope,
+                             Calculations.StrokeCalculations.GetSelfAndBelow(),
                              Activator.CreateInstance(StrokeOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
@@ -273,10 +277,26 @@ internal class Parser
         {
             var token = CurrentToken;
             _ = AcceptAny();
-            var secondParameter = ParseTerm(scope, Calculations.StrokeCalculations | Calculations.DotCalculations | Calculations.Term);
-            return ParseTerm(scope,
-                             Calculations.TestOperations | Calculations.Conversions,
-                             Activator.CreateInstance(TestOperatorMapper[GetValue(token)], heap, secondParameter, token));
+            var secondParameter = ParseArithmentic(scope, Calculations.TestOperations.GetAbove());
+            return ParseArithmentic(scope,
+                                    Calculations.TestOperations.GetSelfAndBelow(),
+                                    Activator.CreateInstance(TestOperatorMapper[GetValue(token)], heap, secondParameter, token));
+        }
+
+        return heap; // no test operator (possibly an error)
+    }
+    protected AST? ParseLogicalOperations(Scope scope, AST? heap)
+    {
+        if (IsEOT() || !IsTypeOf(TokenType.LogicalOperator)) return heap; // there is no logical operator
+
+        if (LogicalOperatorMapper.ContainsKey(GetValue()))
+        {
+            var token = CurrentToken;
+            _ = AcceptAny();
+            var secondParameter = ParseArithmentic(scope, Calculations.LogicalOperations.GetAbove());
+            return ParseArithmentic(scope,
+                                    Calculations.LogicalOperations.GetSelfAndBelow(),
+                                    Activator.CreateInstance(LogicalOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no test operator (possibly an error)

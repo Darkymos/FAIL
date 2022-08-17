@@ -14,7 +14,7 @@ internal abstract class BinaryOperator : AST
     }
 
 
-    public override DataTypes.Object? Call() => Calculate(FirstParameter!.Call()!, SecondParameter!.Call()!);
+    public override DataTypes.Object? Call() => Calculate(FirstParameter.Call()!, SecondParameter.Call()!);
     public override Type GetType() => GetCombinedType();
     public override string ToString() => $"{nameof(BinaryOperator)}";
 

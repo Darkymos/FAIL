@@ -21,6 +21,11 @@ internal class Tokenizer : IEnumerable<Token>
         { ">", TokenType.TestOperator },
         { "<", TokenType.TestOperator },
 
+        // Logical
+        { "||", TokenType.LogicalOperator },
+        { "&&", TokenType.LogicalOperator },
+        { "!", TokenType.LogicalOperator },
+
         // Self Assignments
         { "+=", TokenType.SelfAssignment },
         { "-=", TokenType.SelfAssignment },
@@ -74,6 +79,11 @@ internal class Tokenizer : IEnumerable<Token>
 
         // Conversions
         { "as", TokenType.Conversion },
+
+        // Logical operators
+        { "or", TokenType.LogicalOperator },
+        { "and", TokenType.LogicalOperator },
+        { "not", TokenType.LogicalOperator },
     };
 
     private uint Row = 1;

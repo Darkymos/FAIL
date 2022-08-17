@@ -230,4 +230,12 @@ var objectValue = integerValue as object;
 log(objectValue);
 log((5 + 10 as string) + "5");
 
+log("logical operators -----------------------------------------------------");
+var firstValue = true;
+var secondValue = false;
+log(firstValue || secondValue);
+log(firstValue && secondValue);
+log((firstValue or secondValue) and firstValue);
+log((firstValue and secondValue) or secondValue);
+
 // end of program

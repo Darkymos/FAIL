@@ -1,4 +1,6 @@
 ﻿using FAIL.Exceptions;
+using NotSupportedException = FAIL.Exceptions.NotSupportedException;
+using Object = FAIL.ElementTree.DataTypes.Object;
 
 namespace FAIL.LanguageIntegration;
 internal static class ExceptionCreator
@@ -23,7 +25,7 @@ internal static class ExceptionCreator
 
     public static SyntaxException NotAChar(Token token)
     {
-        var message = $"Expression {token.Value} is not a valid char!";
+        var message = $"Expression '{token.Value}' is not a valid char!";
 
         _ = Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(message, token.Row, token.Column, token.FileName);
@@ -102,5 +104,28 @@ internal static class ExceptionCreator
 
         _ = Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(variableName, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");
+    }
+
+    public static NotSupportedException BinaryOperationNotSupported(Token operatorToken, ElementTree.Type first, ElementTree.Type second)
+    {
+        var message = $"Operator '{operatorToken.Value}' is not supported for types '{first}' and '{second}'!";
+
+        _ = Interpreter.Logger!.Log(message, LogLevel.Error);
+        return new(message, operatorToken.Row, operatorToken.Column, operatorToken.FileName);
+    }
+
+    public static NotSupportedException UnaryOperationNotSupported(Token operatorToken, ElementTree.Type type)
+    {
+        var message = $"Operator '{operatorToken.Value}' is not supported for type '{type}'!";
+
+        _ = Interpreter.Logger!.Log(message, LogLevel.Error);
+        return new(message, operatorToken.Row, operatorToken.Column, operatorToken.FileName);
+    }
+    public static NotSupportedException ExplicitConversionNotSupported(Token operatorToken, ElementTree.Type newType, ElementTree.Type oldType)
+    {
+        var message = $"Conversion to type '{newType}' is not supported for type '{oldType}'!";
+
+        _ = Interpreter.Logger!.Log(message, LogLevel.Error);
+        return new(message, operatorToken.Row, operatorToken.Column, operatorToken.FileName);
     }
 }

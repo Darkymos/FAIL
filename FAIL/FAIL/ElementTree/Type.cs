@@ -15,7 +15,7 @@ internal class Type : AST
     public static bool operator ==(Type first, Type second) => first.Name == second.Name;
     public static bool operator !=(Type first, Type second) => first.Name != second.Name;
     public override bool Equals(object? obj) => obj is not null && Name == ((Type)obj).Name;
-    public override int GetHashCode() => base.GetHashCode();
+    public override int GetHashCode() => Name.GetHashCode();
 
     public static System.Type GetUnderlyingType(Type type) => System.Type.GetType($"FAIL.ElementTree.DataTypes.{type.Name}")!;
 }

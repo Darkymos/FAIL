@@ -1,32 +1,41 @@
 ﻿using FAIL.LanguageIntegration;
+using FAIL.Metadata;
 
 namespace FAIL.ElementTree;
-internal abstract class BinaryOperator : AST
+internal class BinaryOperator : AST
 {
-    public AST FirstParameter { get; init; }
-    public AST SecondParameter { get; init; }
+    public BinaryOperation Operation { get; }
+    public AST FirstParameter { get; }
+    public AST SecondParameter { get; }
+    public (Type Type, Func<DataTypes.Object, DataTypes.Object, DataTypes.Object> Function) ReturnMetadata { get; }
 
 
-    public BinaryOperator(AST firstParameter, AST secondParameter, Token? token = null) : base(token)
+    public BinaryOperator(BinaryOperation operation, AST firstParameter, AST secondParameter, Token? token = null) : base(token)
     {
+        Operation = operation;
         FirstParameter = firstParameter;
         SecondParameter = secondParameter;
+
+        ReturnMetadata = GetReturnMetadata(operation);
     }
 
 
-    public override DataTypes.Object? Call() => Calculate(FirstParameter.Call()!, SecondParameter.Call()!);
-    public override Type GetType() => GetCombinedType();
-    public override string ToString() => $"{nameof(BinaryOperator)}";
+    public override DataTypes.Object? Call() => ReturnMetadata.Function.Invoke(FirstParameter.Call()!, SecondParameter.Call()!);
+    public override Type GetType() => ReturnMetadata.Type;
+    public override string ToString() => $"{nameof(BinaryOperator)}.{Operation}";
 
-    public abstract DataTypes.Object Calculate(DataTypes.Object firstParameter, DataTypes.Object secondParameter);
-
-    protected Type GetCombinedType()
+    private (Type, Func<DataTypes.Object, DataTypes.Object, DataTypes.Object>) GetReturnMetadata(BinaryOperation operation)
     {
-        if (FirstParameter.GetType() == SecondParameter.GetType()) return FirstParameter.GetType();
-        if (FirstParameter.GetType().Name == nameof(DataTypes.Double) || SecondParameter.GetType().Name == nameof(DataTypes.Double))
-            return new(nameof(DataTypes.Double));
-        return new(nameof(String));
-
-
+        try
+        {
+            return ((Dictionary<BinaryOperation, Dictionary<Type, (Type, Func<DataTypes.Object, DataTypes.Object, DataTypes.Object>)>>)
+                Type.GetUnderlyingType(FirstParameter.GetType())
+                    .GetField("BinaryOperations")!
+                    .GetValue(null)!)[operation][SecondParameter.GetType()];
+        }
+        catch (KeyNotFoundException)
+        {
+            throw ExceptionCreator.BinaryOperationNotSupported(Token!.Value, FirstParameter.GetType(), SecondParameter.GetType());
+        }
     }
 }

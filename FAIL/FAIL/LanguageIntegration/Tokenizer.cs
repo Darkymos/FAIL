@@ -64,6 +64,7 @@ internal class Tokenizer : IEnumerable<Token>
         { "int", TokenType.DataType },
         { "double", TokenType.DataType },
         { "string", TokenType.DataType },
+        { "char", TokenType.DataType },
         { "bool", TokenType.DataType },
 
         // Decisions
@@ -141,23 +142,6 @@ internal class Tokenizer : IEnumerable<Token>
                 continue;
             }
 
-            // check for char (currently halted because of some issues)
-            //if (character == '\'')
-            //{
-            //    var possibleChar = LookAhead(2);
-            //    CurrentState = State.Char;
-
-            //    if (possibleChar[1] == '\'')
-            //    {
-            //        var possibleToken = CheckForValidToken(false);
-            //        if (possibleToken is not null) yield return possibleToken.Value;
-
-            //        CurrentState = State.Start;
-            //        continue;
-            //    }
-            //    else throw ExceptionCreator.NotAChar(character.ToString() + possibleChar, FileName);
-            //}
-
             // end of line reached, doesn't mean the current statement's end though
             if (character == '\n')
             {
@@ -189,6 +173,28 @@ internal class Tokenizer : IEnumerable<Token>
                     CommentState = CommentState.Block;
                     continue;
                 }
+            }
+
+            // check for char
+            if (character == '\'')
+            {
+                var possibleChar = LookAhead(2);
+
+                _ = Buffer.Append(character);
+                _ = Buffer.Append(possibleChar);
+
+                CurrentState = State.Char;
+
+                if (possibleChar[1] == '\'')
+                {
+                    var possibleToken = CheckForValidToken(false);
+                    if (possibleToken is not null) yield return possibleToken.Value;
+
+                    _ = Read(2);
+                    CurrentState = State.Start;
+                    continue;
+                }
+                else throw ExceptionCreator.NotAChar(new(TokenType.Char, character.ToString() + possibleChar, Row, Column, FileName));
             }
 
             // all whitespace are considered as an end of the current token
@@ -307,13 +313,14 @@ internal class Tokenizer : IEnumerable<Token>
         else if (CurrentState == State.Int) token = new(TokenType.Number, Convert.ToInt32(Buffer.ToString()), Row, Column - (uint)Buffer.Length, FileName);
         else if (CurrentState == State.Double) token = new(TokenType.Number, Convert.ToDouble(Buffer.ToString(), new CultureInfo("en-US")), Row, Column - (uint)Buffer.Length, FileName);
         else if (CurrentState == State.String) token = new(TokenType.String, Buffer.ToString()[1..^1], Row, Column - (uint)Buffer.Length, FileName);
-        else if (CurrentState == State.Char) token = new(TokenType.String, Buffer[1], Row, Column - (uint)Buffer.Length, FileName);
+        else if (CurrentState == State.Char) token = new(TokenType.Char, Buffer[1], Row, Column - (uint)Buffer.Length, FileName);
         else
         {
             if (KeyWords.ContainsKey(Buffer.ToString())) token = Buffer.ToString() switch
             {
                 "bool" => new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName),
                 "string" => new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName),
+                "char" => new(TokenType.DataType, "Char", Row, Column - (uint)Buffer.Length, FileName),
                 "int" => new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName),
                 "double" => new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName),
                 _ => new(KeyWords[Buffer.ToString()], Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName),

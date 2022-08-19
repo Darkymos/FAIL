@@ -1,8 +1,7 @@
 ﻿using FAIL.ElementTree;
-using FAIL.ElementTree.BinaryOperators;
 using FAIL.ElementTree.DataTypes;
-using FAIL.ElementTree.UnaryOperators;
 using FAIL.Exceptions;
+using FAIL.Metadata;
 using System.Reflection;
 using static FAIL.BuiltIn.BuiltInFunctions;
 
@@ -18,47 +17,43 @@ internal class Parser
 
     // they just map tokens to types of the element tree
     // kinda redundant, but i haven't found a way to replace them yet
-    protected static readonly Dictionary<string, System.Type> ConversionOperatorMapper = new()
+    protected static readonly Dictionary<string, BinaryOperation> DotOperatorMapper = new()
     {
-        { "as", typeof(TypeConversion) },
+        { "*", BinaryOperation.Multiplication },
+        { "/", BinaryOperation.Division },
     };
-    protected static readonly Dictionary<string, System.Type> DotOperatorMapper = new()
+    protected static readonly Dictionary<string, BinaryOperation> StrokeOperatorMapper = new()
     {
-        { "*", typeof(Multiplication) },
-        { "/", typeof(Division) },
+        { "+", BinaryOperation.Addition },
+        { "-", BinaryOperation.Substraction },
     };
-    protected static readonly Dictionary<string, System.Type> StrokeOperatorMapper = new()
+    protected static readonly Dictionary<string, BinaryOperation> TestOperatorMapper = new()
     {
-        { "+", typeof(Addition) },
-        { "-", typeof(Substraction) },
+        { "==", BinaryOperation.Equal },
+        { "!=", BinaryOperation.NotEqual },
+        { ">=", BinaryOperation.GreaterThanOrEqual },
+        { "<=", BinaryOperation.LessThanOrEqual },
+        { ">", BinaryOperation.GreaterThan },
+        { "<", BinaryOperation.LessThan },
     };
-    protected static readonly Dictionary<string, System.Type> TestOperatorMapper = new()
+    protected static readonly Dictionary<string, BinaryOperation> LogicalOperatorMapper = new()
     {
-        { "==", typeof(Equal) },
-        { "!=", typeof(NotEqual) },
-        { ">=", typeof(GreaterThanOrEqual) },
-        { "<=", typeof(LessThanOrEqual) },
-        { ">", typeof(GreaterThan) },
-        { "<", typeof(LessThan) },
+        { "or", BinaryOperation.Or },
+        { "and", BinaryOperation.And },
+        { "||", BinaryOperation.Or },
+        { "&&", BinaryOperation.And },
     };
-    protected static readonly Dictionary<string, System.Type> LogicalOperatorMapper = new()
+    protected static readonly Dictionary<string, BinaryOperation> SelfAssignmentOperatorMapper = new()
     {
-        { "or", typeof(Or) },
-        { "and", typeof(And) },
-        { "||", typeof(Or) },
-        { "&&", typeof(And) },
+        { "+=", BinaryOperation.Addition },
+        { "-=", BinaryOperation.Substraction },
+        { "*=", BinaryOperation.Multiplication },
+        { "/=", BinaryOperation.Division },
     };
-    protected static readonly Dictionary<string, System.Type> SelfAssignmentOperatorMapper = new()
+    protected static readonly Dictionary<string, BinaryOperation> IncrementalOperatorMapper = new()
     {
-        { "+=", typeof(Addition) },
-        { "-=", typeof(Substraction) },
-        { "*=", typeof(Multiplication) },
-        { "/=", typeof(Division) },
-    };
-    protected static readonly Dictionary<string, System.Type> IncrementalOperatorMapper = new()
-    {
-        { "++", typeof(Addition) },
-        { "--", typeof(Substraction) },
+        { "++", BinaryOperation.Addition },
+        { "--", BinaryOperation.Substraction },
     };
 
 
@@ -188,14 +183,14 @@ internal class Parser
             _ = Accept(TokenType.StrokeCalculation);
             return HasValue(operatorToken, "+")
                 ? ParseArithmentic(scope, ParseArithmentic(scope, Calculations.Term))
-                : ParseArithmentic(scope, new Negation(ParseArithmentic(scope, Calculations.Term)));
+                : ParseArithmentic(scope, new UnaryOperator(UnaryOperation.Negation, ParseArithmentic(scope, Calculations.Term)));
         }
 
         // not hack (!value -> Not(value) / not value -> Not(value))
         if (IsTypeOf(TokenType.LogicalOperator) && (HasValue("not") || HasValue("!")))
         {
             _ = Accept(TokenType.LogicalOperator);
-            return ParseArithmentic(scope, new Not(ParseArithmentic(scope, Calculations.Term)));
+            return ParseArithmentic(scope, new UnaryOperator(UnaryOperation.Not, ParseArithmentic(scope, Calculations.Term)));
         }
 
         // currently a bit redundant code, until the type system is finally implemented
@@ -211,6 +206,12 @@ internal class Parser
             _ = AcceptAny();
 
             return ParseObject(new("String"), token!.Value);
+        }
+        if (IsTypeOf(TokenType.Char))
+        {
+            _ = AcceptAny();
+
+            return ParseObject(new("Char"), token!.Value);
         }
         if (IsTypeOf(TokenType.Boolean))
         {
@@ -246,7 +247,7 @@ internal class Parser
             var secondParameter = ParseArithmentic(scope, Calculations.DotCalculations.GetAbove());
             return ParseArithmentic(scope,
                                     Calculations.DotCalculations.GetSelfAndBelow(),
-                                    Activator.CreateInstance(DotOperatorMapper[GetValue(token)], heap, secondParameter, token));
+                                    new BinaryOperator(DotOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no dot calculation (possibly an error)
@@ -263,7 +264,7 @@ internal class Parser
             var secondParameter = ParseArithmentic(scope, Calculations.StrokeCalculations.GetAbove());
             return ParseArithmentic(scope,
                              Calculations.StrokeCalculations.GetSelfAndBelow(),
-                             Activator.CreateInstance(StrokeOperatorMapper[GetValue(token)], heap, secondParameter, token));
+                             new BinaryOperator(StrokeOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no stroke calculation (possibly an error)
@@ -280,7 +281,7 @@ internal class Parser
             var secondParameter = ParseArithmentic(scope, Calculations.TestOperations.GetAbove());
             return ParseArithmentic(scope,
                                     Calculations.TestOperations.GetSelfAndBelow(),
-                                    Activator.CreateInstance(TestOperatorMapper[GetValue(token)], heap, secondParameter, token));
+                                    new BinaryOperator(TestOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no test operator (possibly an error)
@@ -296,7 +297,7 @@ internal class Parser
             var secondParameter = ParseArithmentic(scope, Calculations.LogicalOperations.GetAbove());
             return ParseArithmentic(scope,
                                     Calculations.LogicalOperations.GetSelfAndBelow(),
-                                    Activator.CreateInstance(LogicalOperatorMapper[GetValue(token)], heap, secondParameter, token));
+                                    new BinaryOperator(LogicalOperatorMapper[GetValue(token)], heap, secondParameter, token));
         }
 
         return heap; // no test operator (possibly an error)
@@ -305,16 +306,11 @@ internal class Parser
     {
         if (IsEOT() || !IsTypeOf(TokenType.Conversion)) return heap; // there is no conversion
 
-        if (ConversionOperatorMapper.ContainsKey(GetValue()))
-        {
-            var token = CurrentToken;
-            _ = AcceptAny();
-            var newType = new ElementTree.Type(GetValue());
-            _ = Accept(TokenType.DataType);
-            return Activator.CreateInstance(ConversionOperatorMapper[GetValue(token)], heap, newType, token);
-        }
-
-        return heap; // no conversion (possibly an error)
+        var token = CurrentToken;
+        _ = AcceptAny();
+        var newType = new ElementTree.Type(GetValue());
+        _ = Accept(TokenType.DataType);
+        return new TypeConversion(heap!, newType, token);
     }
 
     // everthing related to types (e.g. declarations)
@@ -406,10 +402,10 @@ internal class Parser
         _ = CheckType(newValue.GetType(), variable.GetType(), variable.Name, token);
 
         return new Assignment(variable,
-                              Activator.CreateInstance(SelfAssignmentOperatorMapper[GetValue(op)],
-                                                       variable,
-                                                       newValue,
-                                                       token));
+                              new BinaryOperator(SelfAssignmentOperatorMapper[GetValue(op)],
+                                                 variable,
+                                                 newValue,
+                                                 token));
     } // test += 42;
     protected AST ParseFunctionCall(Scope scope, Token? token)
     {
@@ -426,10 +422,10 @@ internal class Parser
 
         var variable = GetValidVariable(scope, token.Value, token);
         return new Assignment(variable,
-                              Activator.CreateInstance(IncrementalOperatorMapper[GetValue(op)],
-                                                       variable,
-                                                       new Integer(1),
-                                                       token));
+                              new BinaryOperator(IncrementalOperatorMapper[GetValue(op)],
+                                                 variable,
+                                                 new Integer(1),
+                                                 token));
     } // test++;
 
     // block statements

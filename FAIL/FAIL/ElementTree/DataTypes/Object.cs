@@ -4,11 +4,11 @@ using FAIL.Metadata;
 namespace FAIL.ElementTree.DataTypes;
 internal class Object : AST
 {
-    public static readonly Dictionary<BinaryOperation, Dictionary<string, Type>> BinaryOperations = new()
+    public static readonly Dictionary<BinaryOperation, Dictionary<Type, (Type, Func<Object, Object, Object>)>> BinaryOperations = new()
     {
     };
 
-    public static readonly Dictionary<UnaryOperation, Type> UnaryOperations = new()
+    public static readonly Dictionary<UnaryOperation, (Type, Func<Object, Object>)> UnaryOperations = new()
     {
     };
 

@@ -4,53 +4,53 @@ using FAIL.Metadata;
 namespace FAIL.ElementTree.DataTypes;
 internal class Double : Object
 {
-    public static new readonly Dictionary<BinaryOperation, Dictionary<Type, Type>> BinaryOperations = new()
+    public static new readonly Dictionary<BinaryOperation, Dictionary<Type, (Type, Func<Object, Object, Object>)>> BinaryOperations = new()
     {
         { BinaryOperation.Addition, new() {
-            { new(nameof(Integer)), new(nameof(Double)) },
-            { new(nameof(Double)), new(nameof(Double)) },
+            { new(nameof(Integer)), (new(nameof(Double)), (first, second) => new Double(first.Value + second.Value)) },
+            { new(nameof(Double)), (new(nameof(Double)), (first, second) => new Double(first.Value + second.Value)) },
         }},
         { BinaryOperation.Division, new() {
-            { new(nameof(Integer)), new(nameof(Double)) },
-            { new(nameof(Double)), new(nameof(Double)) },
+            { new(nameof(Integer)), (new(nameof(Double)), (first, second) => new Double(first.Value / second.Value)) },
+            { new(nameof(Double)), (new(nameof(Double)), (first, second) => new Double(first.Value / second.Value)) },
         }},
         { BinaryOperation.Equal, new() {
-            { new(nameof(Integer)), new(nameof(Boolean)) },
-            { new(nameof(Double)), new(nameof(Boolean)) },
+            { new(nameof(Integer)), (new(nameof(Boolean)),(first, second) => new Boolean(first.Value <= second.Value)) },
+            { new(nameof(Double)), (new(nameof(Boolean)),(first, second) => new Boolean(first.Value <= second.Value)) },
         }},
         { BinaryOperation.GreaterThan, new() {
-            { new(nameof(Integer)), new(nameof(Boolean)) },
-            { new(nameof(Double)), new(nameof(Boolean)) },
+            { new(nameof(Integer)), (new(nameof(Boolean)),(first, second) => new Boolean(first.Value > second.Value)) },
+            { new(nameof(Double)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value > second.Value)) },
         }},
         { BinaryOperation.GreaterThanOrEqual, new() {
-            { new(nameof(Integer)), new(nameof(Boolean)) },
-            { new(nameof(Double)), new(nameof(Boolean)) },
+            { new(nameof(Integer)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value >= second.Value)) },
+            { new(nameof(Double)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value >= second.Value)) },
         }},
         { BinaryOperation.LessThan, new() {
-            { new(nameof(Integer)), new(nameof(Boolean)) },
-            { new(nameof(Double)), new(nameof(Boolean)) },
+            { new(nameof(Integer)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value < second.Value)) },
+            { new(nameof(Double)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value < second.Value)) },
         }},
         { BinaryOperation.LessThanOrEqual, new() {
-            { new(nameof(Integer)), new(nameof(Boolean)) },
-            { new(nameof(Double)), new(nameof(Boolean)) },
+            { new(nameof(Integer)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value <= second.Value)) },
+            { new(nameof(Double)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value <= second.Value)) },
         }},
         { BinaryOperation.Multiplication, new() {
-            { new(nameof(Integer)), new(nameof(Double)) },
-            { new(nameof(Double)), new(nameof(Double)) },
+            { new(nameof(Integer)), (new(nameof(Double)), (first, second) => new Double(first.Value * second.Value)) },
+            { new(nameof(Double)), (new(nameof(Double)), (first, second) => new Double(first.Value * second.Value)) },
         }},
         { BinaryOperation.NotEqual, new() {
-            { new(nameof(Integer)), new(nameof(Boolean)) },
-            { new(nameof(Double)), new(nameof(Boolean)) },
+            { new(nameof(Integer)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value != second.Value)) },
+            { new(nameof(Double)), (new(nameof(Boolean)), (first, second) => new Boolean(first.Value != second.Value)) },
         }},
         { BinaryOperation.Substraction, new() {
-            { new(nameof(Integer)), new(nameof(Double)) },
-            { new(nameof(Double)), new(nameof(Double)) },
+            { new(nameof(Integer)), (new(nameof(Double)), (first, second) => new Double(first.Value - second.Value)) },
+            { new(nameof(Double)), (new(nameof(Double)), (first, second) => new Double(first.Value - second.Value)) },
         }}
     };
 
-    public static new readonly Dictionary<UnaryOperation, Type> UnaryOperations = new()
+    public static new readonly Dictionary<UnaryOperation, (Type, Func<Object, Object>)> UnaryOperations = new()
     {
-        { UnaryOperation.Negation, new(nameof(Double)) }
+        { UnaryOperation.Negation, (new(nameof(Double)), (value) => new Double(-value.Value)) }
     };
 
     public static new readonly Dictionary<ConversionType, Dictionary<Type, Func<Object, Object>>> Conversions = new()

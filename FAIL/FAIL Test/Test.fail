@@ -40,10 +40,10 @@ log((1 + 4) * 10);
 log("strings ---------------------------------------------------------------");
 log("Hello World!");
 log("Hello " + "World!");
-log("Hello World!" + 3); // test comment
+log("Hello World!" + (3 as string)); // test comment
 
 log("string interpolations -------------------------------------------------");
-log("10 + 5 is " + (10 + 5));
+log("10 + 5 is " + ((10 + 5) as string));
 
 log("space between identifier and parenthese -------------------------------");
 log ("test123");
@@ -51,9 +51,9 @@ log ("test123");
 log("variables -------------------------------------------------------------");
 var test = "Hello World!";
 log(test);
-var anotherTest = test + 42;
+var anotherTest = test + (42 as string);
 log(anotherTest);
-anotherTest = anotherTest + 1;
+anotherTest = anotherTest + (1 as string);
 log(anotherTest);
 //test = 42; not working, type safety!
 //log(test = "test"); not working!
@@ -150,7 +150,7 @@ while (i < 10) {
 }
 i = 0;
 while (i < 10) {
-	log("i is " + i);
+	log("i is " + (i as string));
 	i += 1;
 	if (i == 5) {
 		break;
@@ -239,5 +239,17 @@ log((firstValue or secondValue) and firstValue);
 log((firstValue and secondValue) or secondValue);
 log(!firstValue);
 log(not secondValue);
+
+log("chars -----------------------------------------------------------------");
+var H = "H";
+var l = 'l';
+var o = 'o';
+var W = 'W';
+var e = 'e';
+var r = 'r';
+var d = 'd';
+var exclamationMark = '!';
+var space = ' ';
+log(H + e + l + l + o + space + W + o + r + l + d + exclamationMark);
 
 // end of program

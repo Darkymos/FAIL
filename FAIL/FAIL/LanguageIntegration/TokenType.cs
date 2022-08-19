@@ -33,4 +33,5 @@ internal enum TokenType
     DataType,
     Conversion,
     LogicalOperator,
+    Char,
 }

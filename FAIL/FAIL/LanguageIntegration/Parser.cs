@@ -212,6 +212,12 @@ internal class Parser
 
             return ParseObject(new("String"), token!.Value);
         }
+        if (IsTypeOf(TokenType.Char))
+        {
+            _ = AcceptAny();
+
+            return ParseObject(new("Char"), token!.Value);
+        }
         if (IsTypeOf(TokenType.Boolean))
         {
             _ = AcceptAny();

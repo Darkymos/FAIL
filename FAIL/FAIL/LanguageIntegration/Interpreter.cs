@@ -1,30 +1,29 @@
-﻿using FAIL.ElementTree;
-using System.Text;
+﻿using System.Text;
 
 namespace FAIL.LanguageIntegration;
 internal class Interpreter
 {
-    private readonly string[] FileNames;
-    private readonly AST? AST;
-#pragma warning disable IDE0052 // Remove unread private members
-    private readonly dynamic? Result;
-#pragma warning restore IDE0052 // Remove unread private members
+    private CompilerPipeline? Pipeline;
 
     public static Logger? Logger { get; private set; }
 
 
-    public Interpreter(LogLevel level, params string[] fileNames)
+    public Interpreter(LogLevel level, string fileName)
     {
-        FileNames = fileNames;
         Logger = new(new(File.Create(Directory.GetCurrentDirectory().Split(@"\bin")[0] + @$"\log.txt"), Encoding.Unicode), level);
 
-        var code = new StringBuilder();
+        var code = File.OpenText(fileName).ReadToEnd();
 
-        foreach (var fileName in FileNames) _ = code.Append(File.OpenText(fileName).ReadToEnd());
+        BuildPipeline();
+        _ = Pipeline!.Call(code, fileName);
 
-        AST = new Parser(code.ToString(), fileNames[^1]).Parse();
-        Result = AST?.Call();
+        //_ = Logger.Log(AST!, LogLevel.Info);
+    }
 
-        _ = Logger.Log(AST!, LogLevel.Info);
+    private void BuildPipeline()
+    {
+        Pipeline = new(new Tokenizer(), new Parser());
+
+        _ = Pipeline.AddComponent<TypeChecker>();
     }
 }

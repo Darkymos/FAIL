@@ -14,10 +14,10 @@ internal class Assignment : AST
     }
 
 
-    public override DataTypes.Object? Call()
+    public override Instance? Call()
     {
         AssignTo.Reassign(Value.Call()!);
-        return null;
+        return AssignTo.Call();
     }
     public override Type GetType() => Value.GetType();
 }

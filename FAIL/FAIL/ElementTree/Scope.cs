@@ -13,10 +13,12 @@ internal class Scope
     }
 
 
-    public AST? Search(Func<AST, bool> predicate)
+    public AST? Search(Func<AST, bool> predicate, bool singleLayer = false)
     {
         var entry = Entries.FirstOrDefault(predicate);
         if (entry is not null) return entry;
+
+        if (singleLayer) return null;
 
         foreach (var scope in SharedScopes) if (scope.Search(predicate) is (not null) and AST result) return result;
 

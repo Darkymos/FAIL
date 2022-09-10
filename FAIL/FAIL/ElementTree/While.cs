@@ -15,11 +15,11 @@ internal class While : AST
     }
 
 
-    public override DataTypes.Object? Call()
+    public override Instance? Call()
     {
         try
         {
-            while (TestCommand.Call()!.Value) 
+            while (TestCommand.Call()!.GetValueAs<BuiltIn.DataTypes.Boolean>().Value) 
                 try { _ = Body.Call(); }
                 catch (ContinueException) { continue; }
 

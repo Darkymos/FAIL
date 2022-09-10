@@ -30,6 +30,6 @@ internal class BuiltInFunctionCall : AST
         return false;
     }
 
-    public override DataTypes.Object? Call() => Functions[Name].Function.Invoke(Parameters);
+    public override Instance? Call() => Functions[Name].Function.Invoke(Parameters);
     public override Type GetType() => Functions[Name].ReturnType;
 }

@@ -16,6 +16,6 @@ internal class If : AST
     }
 
 
-    public override DataTypes.Object? Call() => TestCommand.Call()!.Value ? IfBody.Call() : ElseBody?.Call();
+    public override Instance? Call() => TestCommand.Call()!.GetValueAs<BuiltIn.DataTypes.Boolean>().Value ? IfBody.Call() : ElseBody?.Call();
     public override Type GetType() => new("Undefined");
 }

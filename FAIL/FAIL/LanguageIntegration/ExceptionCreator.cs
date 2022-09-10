@@ -1,6 +1,6 @@
 ﻿using FAIL.Exceptions;
 using NotSupportedException = FAIL.Exceptions.NotSupportedException;
-using Object = FAIL.ElementTree.DataTypes.Object;
+using Object = FAIL.ElementTree.Instance;
 
 namespace FAIL.LanguageIntegration;
 internal static class ExceptionCreator
@@ -13,7 +13,7 @@ internal static class ExceptionCreator
         return new(message, token.Row, token.Column, token.FileName);
     }
 
-    public static SyntaxException WrongToken(Token token, TokenType expected)
+    public static SyntaxException InvalidToken(Token token, TokenType expected)
     {
         var message = $"Invalid token '{token.Value}' in line {token.Row} and column {token.Column}! '{expected}' expected.";
 
@@ -39,7 +39,7 @@ internal static class ExceptionCreator
         return new(token.Value, message, token.Row, token.Column, token.FileName);
     }
 
-    public static AlreadyAssignedException AlreadyAssignedInScope(Token token)
+    public static AlreadyAssignedException AlreadyDeclaredInScope(Token token)
     {
         var message = $"'{token.Value}' is already defined in the current scope!";
 
@@ -100,7 +100,7 @@ internal static class ExceptionCreator
 
     public static NotAssignedException UseOfUnassignedVariable(string variableName, Token? token)
     {
-        var message = $"Use of unassigned variable '{variableName}'";
+        var message = $"Use of unassigned variable '{variableName}'!";
 
         _ = Interpreter.Logger!.Log(message, LogLevel.Critical);
         return new(variableName, message, token?.Row ?? 0, token?.Column ?? 0, token?.FileName ?? "");

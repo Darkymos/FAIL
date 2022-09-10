@@ -22,7 +22,7 @@ internal class Variable : AST
     }
 
 
-    public override DataTypes.Object? Call() => Value?.Call();
+    public override Instance? Call() => Value?.Call();
     public override Type GetType() => Type;
 
     public void Reassign(AST value) => Value = value;

@@ -60,7 +60,7 @@ internal class Function : AST
         return false;
     }
 
-    public override DataTypes.Object? Call()
+    public override Instance? Call()
     {
         try
         {

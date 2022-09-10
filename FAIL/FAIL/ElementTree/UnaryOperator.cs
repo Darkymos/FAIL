@@ -6,7 +6,7 @@ internal class UnaryOperator : AST
 {
     public UnaryOperation Operation { get; }
     public AST Parameter { get; }
-    public (Type Type, Func<DataTypes.Object, DataTypes.Object> Function) ReturnMetadata { get; }
+    public (Type Type, Func<Instance, Instance> Function) ReturnMetadata { get; }
 
 
     public UnaryOperator(UnaryOperation operation, AST parameter, Token? token = null) : base(token)
@@ -17,15 +17,15 @@ internal class UnaryOperator : AST
         ReturnMetadata = GetReturnType(operation);
     }
 
-    public override DataTypes.Object? Call() => ReturnMetadata.Function.Invoke(Parameter.Call()!);
+    public override Instance? Call() => ReturnMetadata.Function.Invoke(Parameter.Call()!);
     public override Type GetType() => ReturnMetadata.Type;
     public override string ToString() => $"{nameof(UnaryOperator)}.{Operation}";
 
-    private (Type, Func<DataTypes.Object, DataTypes.Object>) GetReturnType(UnaryOperation operation)
+    private (Type, Func<Instance, Instance>) GetReturnType(UnaryOperation operation)
     {
         try
         {
-            return ((Dictionary<UnaryOperation, (Type, Func<DataTypes.Object, DataTypes.Object>)>)
+            return ((Dictionary<UnaryOperation, (Type, Func<Instance, Instance>)>)
                 Type.GetUnderlyingType(Parameter.GetType())
                     .GetField("UnaryOperations")!
                     .GetValue(null)!)[operation];

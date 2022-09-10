@@ -19,13 +19,13 @@ internal class For : AST
     }
 
 
-    public override DataTypes.Object? Call()
+    public override Instance? Call()
     {
         try
         {
             _ = IteratorVariable.Call();
 
-            while (IteratorTest.Call()!.Value)
+            while (IteratorTest.Call()!.GetValueAs<BuiltIn.DataTypes.Boolean>().Value)
             {
                 try
                 {

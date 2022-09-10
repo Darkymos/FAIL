@@ -16,7 +16,7 @@ internal class FunctionCall : AST
     }
 
 
-    public override DataTypes.Object? Call()
+    public override Instance? Call()
     {
         Function.SetCurrentOverload(Function.GetOverload(Parameters)!);
         MapParameters();

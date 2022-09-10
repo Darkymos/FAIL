@@ -8,6 +8,6 @@ internal class Continue : AST
     {
     }
 
-    public override DataTypes.Object? Call() => throw new ContinueException();
+    public override Instance? Call() => throw new ContinueException();
     public override Type GetType() => new("Undefined");
 }

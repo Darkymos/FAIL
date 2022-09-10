@@ -9,7 +9,7 @@ internal abstract class AST
     public AST(Token? token = null) => Token = token;
 
 
-    public abstract ElementTree.DataTypes.Object? Call();
+    public abstract Instance? Call();
     public new abstract Type GetType();
 
     public override string ToString() => GetType().Name;

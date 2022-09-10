@@ -10,7 +10,7 @@ internal class CommandList : AST
     public CommandList(Scope commands, Token? token = null) : base(token) => Commands = commands;
 
 
-    public override DataTypes.Object? Call()
+    public override Instance? Call()
     {
         var results = ProcessAll();
         return results.Count == 0 ? null : results[^1];
@@ -22,7 +22,7 @@ internal class CommandList : AST
     {
         var results = new List<dynamic?>();
 
-        foreach (var command in Commands.Entries.Where(command => command is not (null or Variable or Function)))
+        foreach (var command in Commands.Entries.Where(command => command is not (null or Variable or Function or Object)))
         {
             results.Add(command.Call());
             Interpreter.Logger?.Log(results[^1], command, LogLevel.Info);

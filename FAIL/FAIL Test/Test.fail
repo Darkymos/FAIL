@@ -59,7 +59,7 @@ log(anotherTest);
 //log(test = "test"); not working!
 //var test = 42; already assigned!
 var lazy;
-//log(lazy); this shouldn't be working i guess
+//log(lazy); doesn't work!
 lazy = 1;
 log(lazy);
 
@@ -114,7 +114,7 @@ log(2 >= 1);
 log(1 <= 0);
 log(42 > 1);
 log(42 < 1337);
-log("T" == 't');
+log("t" == 't');
 
 log("if --------------------------------------------------------------------");
 if (test == test) {
@@ -227,8 +227,6 @@ var combinedInteger = integerValue + 10;
 var combinedString = stringValue + "10";
 log(combinedInteger);
 log(combinedString);
-var objectValue = integerValue as object;
-log(objectValue);
 log((5 + 10 as string) + "5");
 
 log("logical operators -----------------------------------------------------");
@@ -243,14 +241,26 @@ log(not secondValue);
 
 log("chars -----------------------------------------------------------------");
 var H = 'H';
+var e = 'e';
 var l = 'l';
 var o = 'o';
+var space = ' ';
 var W = 'W';
-var e = 'e';
 var r = 'r';
 var d = 'd';
 var exclamationMark = '!';
-var space = ' ';
 log(H + e + l + l + o + space + W + o + r + l + d + exclamationMark);
+
+log("classes ---------------------------------------------------------------");
+class TestClass {
+	var test = 0;
+
+	void Call() {
+		log("Call to TestClass.Call");
+	}
+}
+var instance = new TestClass();
+instance.Call();
+log(instance.test);
 
 // end of program

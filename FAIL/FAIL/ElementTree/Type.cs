@@ -8,7 +8,7 @@ internal class Type : AST
 
     public Type(string name, Token? token = null) : base(token) => Name = name[0].ToString().ToUpper() + name[1..];
 
-    public override DataTypes.Object? Call() => throw new NotImplementedException();
+    public override Instance? Call() => throw new NotImplementedException();
     public override Type GetType() => this;
     public override string ToString() => Name;
 
@@ -17,5 +17,5 @@ internal class Type : AST
     public override bool Equals(object? obj) => obj is not null && Name == ((Type)obj).Name;
     public override int GetHashCode() => Name.GetHashCode();
 
-    public static System.Type GetUnderlyingType(Type type) => System.Type.GetType($"FAIL.ElementTree.DataTypes.{type.Name}")!;
+    public static System.Type GetUnderlyingType(Type type) => System.Type.GetType($"FAIL.BuiltIn.DataTypes.{type.Name}")!;
 }

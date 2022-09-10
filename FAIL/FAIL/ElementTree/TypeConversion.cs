@@ -6,7 +6,7 @@ internal class TypeConversion : AST
 {
     public AST Value { get; }
     public Type NewType { get; }
-    public Func<DataTypes.Object, DataTypes.Object> ConversionFunction { get; }
+    public Func<Instance, Instance> ConversionFunction { get; }
 
     public TypeConversion(AST value, Type newType, Token? token = null) : base(token)
     {
@@ -15,7 +15,7 @@ internal class TypeConversion : AST
 
         try
         {
-            ConversionFunction = ((Dictionary<ConversionType, Dictionary<Type, Func<DataTypes.Object, DataTypes.Object>>>)
+            ConversionFunction = ((Dictionary<ConversionType, Dictionary<Type, Func<Instance, Instance>>>)
                 Type.GetUnderlyingType(Value.GetType())
                     .GetField("Conversions")!
                     .GetValue(null)!)[ConversionType.Explicit][NewType];
@@ -26,8 +26,8 @@ internal class TypeConversion : AST
         }
     }
 
-    public override DataTypes.Object? Call() => ConversionFunction.Invoke(Value.Call()!);
+    public override Instance? Call() => ConversionFunction.Invoke(Value.Call()!);
     public override Type GetType() => NewType;
 
-    public static T? ConvertTo<T>(DataTypes.Object @object) where T : DataTypes.Object => @object as T;
+    public static T? ConvertTo<T>(Instance @object) where T : Instance => @object as T;
 }

@@ -10,7 +10,11 @@ while (true) {
 		log("You needed a total of " + tries + " tries to guess the right number.");
 		break;
 	}
-	else {
-		log("This is not the right number!");
+	else if (guess > solution) {
+		log("Your Guessed to high");
+	} else {
+		log("Your Guessed to low");
 	}
+	
+	log("\n--- Next try! ---\n\n")
 }

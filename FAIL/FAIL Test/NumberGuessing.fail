@@ -15,4 +15,6 @@ while (true) {
 	} else {
 		log("Your Guessed to low");
 	}
+	
+	log("\n--- Next try! ---\n\n")
 }

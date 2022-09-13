@@ -1,4 +1,4 @@
-﻿var solution = 42;
+var solution = 42;
 var tries = 0;
 
 while (true) {
@@ -11,9 +11,9 @@ while (true) {
 		break;
 	}
 	else if (guess > solution) {
-		log("Your Guessed to high");
+		log("You guessed to high!");
 	} else {
-		log("Your Guessed to low");
+		log("You guessed to low!");
 	}
 	
 	log("\n--- Next try! ---\n\n")

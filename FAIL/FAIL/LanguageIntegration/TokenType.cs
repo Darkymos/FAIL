@@ -37,6 +37,8 @@ internal enum TokenType
     Accessor,
     Class,
     New,
+    Init,
+    UnaryLogicalOperator,
 }
 
 internal static class TokenTypeTranslator
@@ -47,7 +49,8 @@ internal static class TokenTypeTranslator
     {
         // Operators
         "==" or "!=" or ">=" or "<=" or ">" or "<" => TokenType.TestOperator,
-        "||" or "&&" or "!" => TokenType.LogicalOperator, 
+        "||" or "&&" => TokenType.LogicalOperator,
+        "!" => TokenType.UnaryLogicalOperator,
         "+=" or "-=" or "*=" or "/=" => TokenType.SelfAssignment,
         "++" or "--" => TokenType.IncrementalOperator,
         "+" or "-" => TokenType.StrokeCalculation,
@@ -80,6 +83,7 @@ internal static class TokenTypeTranslator
         // OOP
         "class" => TokenType.Class,
         "new" => TokenType.New,
+        "init" => TokenType.Init,
 
         // Decisions
         "return" => TokenType.Return,
@@ -96,7 +100,8 @@ internal static class TokenTypeTranslator
         "as" => TokenType.Conversion,
 
         // Logical operators
-        "or" or "and" or "not" => TokenType.LogicalOperator,
+        "or" or "and" => TokenType.LogicalOperator,
+        "not" => TokenType.UnaryLogicalOperator,
 
         // Not found
         _ => null,

@@ -44,8 +44,7 @@ internal class Function : AST
 
         for (var i = 0; i < given.Count; i++)
         {
-            if (!Parser.CheckType(given[i].GetType(), expected[i].GetType()))
-                isValid = false;
+            // TODO check type
         }
 
         return isValid;

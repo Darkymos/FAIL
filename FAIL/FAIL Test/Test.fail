@@ -252,8 +252,15 @@ var exclamationMark = '!';
 log(H + e + l + l + o + space + W + o + r + l + d + exclamationMark);
 
 log("classes ---------------------------------------------------------------");
-class TestClass {
-	var test = 0;
+/*class TestClass {
+	int Test;
+
+	init TestClass() { 
+		Test = 0; 
+	}
+	init TestClass(var test) { 
+		Test = test; 
+	}
 
 	void Call() {
 		log("Call to TestClass.Call");
@@ -261,6 +268,6 @@ class TestClass {
 }
 var instance = new TestClass();
 instance.Call();
-log(instance.test);
+log(instance.Test);*/
 
 // end of program

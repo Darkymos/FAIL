@@ -21,7 +21,7 @@ internal class BuiltInFunctionCall : AST
     {
         if (given.Count != expected.Count && NonOptionalParametersMissing(expected, given)) return false;
 
-        for (var i = 0; i < given.Count; i++) if (!Parser.CheckType(given[i].GetType(), expected[i].Type)) return false;
+        // TODO check type
         return true;
     }
     private static bool NonOptionalParametersMissing(List<ParameterInfo> expected, List<AST> given)

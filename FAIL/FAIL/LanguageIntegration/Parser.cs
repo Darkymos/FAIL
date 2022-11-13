@@ -19,11 +19,10 @@ internal sealed class Parser : IParser
         {
             _ = services.AddSingleton(reader);
 
-            _ = services.AddActivatorServices<IParserComponent, ParserComponentActivator>();
+            _ = services.AddServices<IParserComponent>();
         })
         .Build();
-
-        Host.Services.GetRequiredService<ParserComponentActivator>().ActivateAsync().Wait();
+        //Host.Services.GetRequiredService<ParserComponentActivator>().ActivateAsync().Wait();
 
         if (reader.IsEOT()) return new(); // empty file
 

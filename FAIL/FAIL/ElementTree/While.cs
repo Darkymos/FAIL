@@ -19,7 +19,7 @@ internal class While : AST
     {
         try
         {
-            while (TestCommand.Call()!.GetValueAs<BuiltIn.DataTypes.Boolean>().Value) 
+            while (TestCommand.Call()!.GetValueAs<BuiltIn.DataTypes.Boolean>().Value)
                 try { _ = Body.Call(); }
                 catch (ContinueException) { continue; }
 

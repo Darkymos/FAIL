@@ -10,7 +10,7 @@ internal sealed class TermParser : IParserComponent
     private readonly IdentifierParser IdentifierParser;
 
 
-    public TermParser(TokenReader reader, ArithmeticOperationParser arithmeticOperationParser, 
+    public TermParser(TokenReader reader, ArithmeticOperationParser arithmeticOperationParser,
                       BuiltInClassParser builtInClassParser, IdentifierParser identifierParser)
     {
         Reader = reader;
@@ -62,10 +62,11 @@ internal sealed class TermParser : IParserComponent
     {
         _ = Reader.ConsumeCurrentToken();
 
-        if (token!.Value.Value is int) return BuiltInClassParser.Parse(new("Integer"), token);
-        if (token!.Value.Value is double) return BuiltInClassParser.Parse(new("Double"), token);
-
-        throw ExceptionCreator.InvalidToken(Reader.CurrentToken!.Value, TokenType.Number);
+        return token!.Value.Value is int
+            ? BuiltInClassParser.Parse(new("Integer"), token)
+            : token!.Value.Value is double
+            ? (AST)BuiltInClassParser.Parse(new("Double"), token)
+            : throw ExceptionCreator.InvalidToken(Reader.CurrentToken!.Value, TokenType.Number);
     }
     private AST ParseString(Token? token)
     {

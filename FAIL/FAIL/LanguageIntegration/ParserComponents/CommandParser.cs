@@ -1,6 +1,6 @@
 ﻿using FAIL.ElementTree;
-using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace FAIL.LanguageIntegration.ParserComponents;
 internal sealed class CommandParser : IParserComponent
@@ -43,7 +43,7 @@ internal sealed class CommandParser : IParserComponent
 
     private AST ParseSimpleKeyword()
     {
-        var result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{Reader.CurrentToken!.Value.Type}")!, 
+        var result = (Activator.CreateInstance(System.Type.GetType($"FAIL.ElementTree.{Reader.CurrentToken!.Value.Type}")!,
                                                Reader.CurrentToken) as AST)!;
         _ = Reader.ConsumeCurrentToken();
         return result;

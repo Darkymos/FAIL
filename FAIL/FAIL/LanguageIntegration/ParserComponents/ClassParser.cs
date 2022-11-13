@@ -59,8 +59,8 @@ internal sealed class ClassParser : IParserComponent
 
         //if (scope.Search(x => x is ))
 
-            // 'parameters' may be empty
-            _ = Reader.ConsumeCurrentToken(TokenType.OpeningParenthese);
+        // 'parameters' may be empty
+        _ = Reader.ConsumeCurrentToken(TokenType.OpeningParenthese);
         var parameters = CommandListParser.Parse(TokenType.Separator, TokenType.ClosingParenthese);
 
         // functions must declare specific types for their parameters to avoid major issues with result types on calculations

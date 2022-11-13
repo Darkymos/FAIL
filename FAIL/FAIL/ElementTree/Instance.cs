@@ -2,7 +2,7 @@
 
 namespace FAIL.ElementTree;
 internal class Instance : AST
-{ 
+{
     public Type Type { get; }
     public Object Value { get; }
 

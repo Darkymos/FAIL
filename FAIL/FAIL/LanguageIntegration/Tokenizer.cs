@@ -207,7 +207,7 @@ internal class Tokenizer : ITokenizer
     private char[]? Read(int length)
     {
         if (CurrentPosition + length >= Raw!.Length) return null;
-        
+
         CurrentPosition += length;
         return Raw[(CurrentPosition - length)..CurrentPosition];
     }
@@ -229,16 +229,17 @@ internal class Tokenizer : ITokenizer
         {
             var possibleKeyWord = TokenTypeTranslator.GetKeyWord(Buffer.ToString());
 
-            if (possibleKeyWord is not null) token = Buffer.ToString() switch
-            {
-                "bool" => new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName!),
-                "string" => new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName!),
-                "char" => new(TokenType.DataType, "Char", Row, Column - (uint)Buffer.Length, FileName!),
-                "int" => new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName!),
-                "double" => new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName!),
-                _ => new(possibleKeyWord!.Value, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!),
-            };
-            else token = new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!);
+            token = possibleKeyWord is not null
+                ? Buffer.ToString() switch
+                {
+                    "bool" => new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName!),
+                    "string" => new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName!),
+                    "char" => new(TokenType.DataType, "Char", Row, Column - (uint)Buffer.Length, FileName!),
+                    "int" => new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName!),
+                    "double" => new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName!),
+                    _ => new(possibleKeyWord!.Value, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!),
+                }
+                : (new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!));
         }
 
         Buffer = new();

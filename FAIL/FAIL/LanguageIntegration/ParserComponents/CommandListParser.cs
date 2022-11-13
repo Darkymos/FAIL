@@ -7,7 +7,7 @@ internal sealed class CommandListParser : IParserComponent
     private readonly CommandParser CommandParser;
 
 
-    public CommandListParser(TokenReader reader, CommandParser commandParser) 
+    public CommandListParser(TokenReader reader, CommandParser commandParser)
     {
         Reader = reader;
         CommandParser = commandParser;
@@ -17,7 +17,7 @@ internal sealed class CommandListParser : IParserComponent
     public CommandList Parse(TokenType endOfStatementSign, TokenType? endOfBlockSign = null, params Scope[] shared)
     {
         var commands = new Scope(new(), shared); // owned scope
-        
+
         while (!IsEnd(endOfBlockSign)) commands.Add(CommandParser.Parse(commands, endOfStatementSign, endOfBlockSign)!);
 
         // most often TokenType.ClosingBracket

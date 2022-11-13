@@ -13,8 +13,8 @@ internal sealed class BuiltInClassParser : IParserComponent
     {
         var builtInType = System.Type.GetType($"FAIL.BuiltIn.DataTypes.{type.Name}");
 
-        return builtInType is not null 
-            ? new Instance(type, token!.Value.Value, token) 
+        return builtInType is not null
+            ? new Instance(type, token!.Value.Value, token)
             : throw new NotImplementedException();
     }
 }

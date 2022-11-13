@@ -42,7 +42,7 @@ internal sealed class TypeParser : IParserComponent
         return new Variable(identifier.Value,
                             CommandParser.Parse(scope),
                             identifier);
-        
+
         // TODO check type
     }
     private AST ParseFunction(Scope scope, out bool isBlock, Token type, Token identifier)

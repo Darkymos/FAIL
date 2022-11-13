@@ -34,7 +34,7 @@ internal class Char : Object
 
     public char Value { get; }
 
-    public static new Type Type => new(nameof(Char)); 
+    public static new Type Type => new(nameof(Char));
 
 
     public Char(char value, Token? token = null) : base(nameof(Char), token) => Value = value;

@@ -30,11 +30,8 @@ internal class Scope
 
     public bool IsIdentifierUnique(string name)
     {
-        if (GetVariableFromScope(name, true) is not null) return false;
-        if (GetFunctionFromScope(name, true) is not null) return false;
-        if (GetClassFromScope(name, true) is not null) return false;
-
-        return true;
+        return GetVariableFromScope(name, true) is null
+&& GetFunctionFromScope(name, true) is null && GetClassFromScope(name, true) is null;
     }
     public bool IsDeclared(string name)
     {

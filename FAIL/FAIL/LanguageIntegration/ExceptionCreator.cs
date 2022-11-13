@@ -1,6 +1,5 @@
 ﻿using FAIL.Exceptions;
 using NotSupportedException = FAIL.Exceptions.NotSupportedException;
-using Object = FAIL.ElementTree.Instance;
 
 namespace FAIL.LanguageIntegration;
 internal static class ExceptionCreator

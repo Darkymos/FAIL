@@ -31,9 +31,9 @@ internal class Function : AST
         }
     }
     public void SetCurrentOverload(FunctionOverload overload) => Current = Overloads[Overloads.IndexOf(overload)];
-    public bool HasOverload(CommandList parameters) 
+    public bool HasOverload(CommandList parameters)
         => Overloads.Any(x => ValidateParameters(x.Parameters.Commands.Entries, parameters.Commands.Entries));
-    public FunctionOverload? GetOverload(CommandList parameters) 
+    public FunctionOverload? GetOverload(CommandList parameters)
         => Overloads.FirstOrDefault(x => ValidateParameters(x.Parameters.Commands.Entries, parameters.Commands.Entries));
 
     private static bool ValidateParameters(List<AST> expected, List<AST> given)

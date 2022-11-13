@@ -34,7 +34,7 @@ internal static class TokenReaderExtensions
 {
     public static dynamic GetValue(this TokenReader _, Token? token) => token!.Value.Value;
 
-    public static bool HasValue(this TokenReader _, Token? token, dynamic value) 
+    public static bool HasValue(this TokenReader _, Token? token, dynamic value)
         => token!.Value.Value.GetType() == value.GetType() && token!.Value.Value == value;
 
     public static bool IsTypeOf(this TokenReader _, TokenType type, Token? token) => token!.Value.Type == type;

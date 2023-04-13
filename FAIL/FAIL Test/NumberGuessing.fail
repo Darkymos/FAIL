@@ -6,11 +6,11 @@ while (true) {
 	var guess = input("Guess a number: ");
 
 	if (solution == guess) {
-		log("You won!");
-		log("You needed a total of " + tries + " tries to guess the right number.");
+		|> "You won!");
+		|> "You needed a total of " + tries + " tries to guess the right number.");
 		break;
 	}
 	else {
-		log("This is not the right number!");
+		|> "This is not the right number!");
 	}
 }

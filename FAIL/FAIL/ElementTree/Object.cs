@@ -2,7 +2,7 @@
 using FAIL.Metadata;
 
 namespace FAIL.ElementTree;
-internal abstract class Object : AST
+public abstract class Object : AST
 {
     public static readonly Dictionary<BinaryOperation, Dictionary<Type, (Type, Func<Instance, Instance, Instance>)>> BinaryOperations = new()
     {

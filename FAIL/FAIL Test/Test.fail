@@ -1,245 +1,242 @@
-﻿log("simple integer stroke calculations ------------------------------------");
-log(45 + 3);
-log(90 - 4);
-log(100 - 10 + 5);
-log(100 + 10 - 5);
-log(-10);
-log(-10 + 5);
+﻿|> "simple integer stroke calculations ------------------------------------";
+|> 45 + 3;
+|> 90 - 4;
+|> 100 - 10 + 5;
+|> 100 + 10 - 5;
+|> -10;
+|> -10 + 5;
 
-log("simple integer dot calculations ---------------------------------------");
-log(87 * 9);
-log(90 / 10);
-log(90 / 11);
-log(90 * 10 / 20);
-log(100 / 20 * 13);
+|> "simple integer dot calculations ---------------------------------------";
+|> 87 * 9;
+|> 90 / 10;
+|> 90 / 11;
+|> 90 * 10 / 20;
+|> 100 / 20 * 13;
 
-log("simple integer mixed calculation (dot before stroke) ------------------");
-log(90 / 10 + 1);
+|> "simple integer mixed calculation (dot before stroke) ------------------";
+|> 90 / 10 + 1;
 
-log("simple double calculations --------------------------------------------");
-log(9.5 + 8.7);
-log(7.1 - 0.1);
-log(0.5 * 3.5);
-log(1.5 / 0.5);
+|> "simple double calculations --------------------------------------------";
+|> 9.5 + 8.7;
+|> 7.1 - 0.1;
+|> 0.5 * 3.5;
+|> 1.5 / 0.5;
 
-log("simple mixed double and integer calculations --------------------------");
-log(9 + 1.5);
-log(8 - 0.5);
-log(10 * 0.5);
-log(5 / 0.5);
-log(1.5 + 9);
-log(0.5 - 8);
-log(0.5 * 10);
-log(0.5 / 5);
-log(10.0 * 2);
-log(10. * 2);
+|> "simple mixed double and integer calculations --------------------------";
+|> 9 + 1.5;
+|> 8 - 0.5;
+|> 10 * 0.5;
+|> 5 / 0.5;
+|> 1.5 + 9;
+|> 0.5 - 8;
+|> 0.5 * 10;
+|> 0.5 / 5;
+|> 10.0 * 2;
+|> 10. * 2;
 
-log("test for dot before stroke with parentheses ---------------------------");
-log((1 + 4) * 10);
+|> "test for dot before stroke with parentheses ---------------------------";
+|> (1 + 4) * 10;
 
-log("strings ---------------------------------------------------------------");
-log("Hello World!");
-log("Hello " + "World!");
-log("Hello World!" + (3 as string)); // test comment
+|> "strings ---------------------------------------------------------------";
+|> "Hello World!";
+|> "Hello " + "World!";
+|> "Hello World!" + (3 as string); // test comment
 
-log("string interpolations -------------------------------------------------");
-log("10 + 5 is " + ((10 + 5) as string));
+|> "string interpolations -------------------------------------------------";
+|> "10 + 5 is " + ((10 + 5) as string);
 
-log("space between identifier and parenthese -------------------------------");
-log ("test123");
-
-log("variables -------------------------------------------------------------");
+|> "variables -------------------------------------------------------------";
 var test = "Hello World!";
-log(test);
+|> test;
 var anotherTest = test + (42 as string);
-log(anotherTest);
+|> anotherTest;
 anotherTest = anotherTest + (1 as string);
-log(anotherTest);
+|> anotherTest;
 //test = 42; not working, type safety!
-//log(test = "test"); not working!
+//|> test = "test"; not working!
 //var test = 42; already assigned!
 var lazy;
-//log(lazy); doesn't work!
+//|> lazy; doesn't work!
 lazy = 1;
-log(lazy);
+|> lazy;
 
-log("functions -------------------------------------------------------------");
+|> "functions -------------------------------------------------------------";
 void TestFunction() {
 	var local = "test";
-	log(test); // variable from outer scope
-	log("Hello World!");
+	|> test; // variable from outer scope
+	|> "Hello World!";
 }
 TestFunction();
 TestFunction();
 /*
-	log(local); not allowed, out of scope!
+	|> local; not allowed, out of scope!
 	void TestFunction() { already assigned!
 	}
 	void test() { already assigned!
 	}
 */
 
-log("functions with parameters ---------------------------------------------");
+|> "functions with parameters ---------------------------------------------";
 void Log(string value) {
-	log("Call to 'Log'");
-	log(value);
+	|> "Call to 'Log'";
+	|> value;
 }
 Log("test");
-Log(42 as string); // implicit coversions + methods? -> implicit conversion to object should be possible
-//Log(42, "test"); wrong argument count!
+|> 42 as string; // implicit coversions + methods? -> implicit conversion to object should be possible
+//|> 42, "test"; wrong argument count!
 
-log("functions with return value -------------------------------------------");
+|> "functions with return value -------------------------------------------";
 int AddIntegers(int a, int b) {
 	return a + b;
 }
 var result = AddIntegers(1, 2);
-log(result);
-log(AddIntegers(10, 5));
+|> result;
+|> AddIntegers(10, 5);
 
 // test for call in other file (will be improved in the future)
-//log(Substract(10, 5));
+//|> Substract(10, 5);
 
-log("booleans --------------------------------------------------------------");
-log(true);
-log(false);
-log(true == true);
-log(true == false);
-log(1 == 1);
-log("h" == "s");
-log(1 == 10 - 9);
-log(6 + 1 == 2 * 3 + 1);
-log(true != false);
-log(test != test);
-log(2 >= 1);
-log(1 <= 0);
-log(42 > 1);
-log(42 < 1337);
-log("t" == 't');
+|> "booleans --------------------------------------------------------------";
+|> true;
+|> false;
+|> true == true;
+|> true == false;
+|> 1 == 1;
+|> "h" == "s";
+|> 1 == 10 - 9;
+|> 6 + 1 == 2 * 3 + 1;
+|> true != false;
+|> test != test;
+|> 2 >= 1;
+|> 1 <= 0;
+|> 42 > 1;
+|> 42 < 1337;
+|> "t" == 't';
 
-log("if --------------------------------------------------------------------");
+|> "if --------------------------------------------------------------------";
 if (test == test) {
-	log("in if");
+	|> "in if";
 }
 if (test != test) {
-	log("unreachable code");
+	|> "unreachable code";
 }
 if (test != test) {
-	log("unreachable code");
+	|> "unreachable code";
 } 
 else {
-	log("in else");
+	|> "in else";
 }
 if (42 == 1337) {
-	log("unreachable code");
+	|> "unreachable code";
 } 
 else if (42 == 42) {
-	log("in else if");
+	|> "in else if";
 }
 else {
-	log("unreachable code");
+	|> "unreachable code";
 }
 
-log("while -----------------------------------------------------------------");
+|> "while -----------------------------------------------------------------";
 var i = 0;
 while (i < 10) {
-	log(i);
+	|> i;
 	i += 1;
 	if (i == 5) {
 		continue;
 	}
-	log("again :)");
+	|> "again :)";
 }
 i = 0;
 while (i < 10) {
-	log("i is " + (i as string));
+	|> "i is " + (i as string);
 	i += 1;
 	if (i == 5) {
 		break;
 	}
 }
 
-log("self assignments ------------------------------------------------------");
+|> "self assignments ------------------------------------------------------";
 var dummy = 0;
-log(dummy);
+|> dummy;
 dummy += 3;
-log(dummy);
+|> dummy;
 dummy -= 1;
-log(dummy);
+|> dummy;
 dummy *= 5;
-log(dummy);
+|> dummy;
 dummy /= 2;
-log(dummy);
+|> dummy;
 
-log("input -----------------------------------------------------------------");
-//log(input());
-//log(input("Guess a number: "));
+|> "input -----------------------------------------------------------------";
+//|> input();
+//|> input("Guess a number: ");
 
-log("incremental operators -------------------------------------------------");
+|> "incremental operators -------------------------------------------------";
 var inc = 0;
-log(inc);
+|> inc;
 inc++;
-log(inc);
+|> inc;
 inc--;
-log(inc);
+|> inc;
 
-log("for -------------------------------------------------------------------");
+|> "for -------------------------------------------------------------------";
 for (var i = 0; i < 10; i++) {
-	log(i);
+	|> i;
 }
 
-log("body-less instructions ------------------------------------------------");
-if (inc == 0) log("inc is 0");
-//void BodyLessFunction() log("body-less function"); not working!
+|> "body-less instructions ------------------------------------------------";
+if (inc == 0) |> "inc is 0";
+//void BodyLessFunction() |> "body-less function"; not working!
 
-log("typed functions and variables------------------------------------------");
+|> "typed functions and variables------------------------------------------";
 int AddValues(int a, int b) {
 	return a + b;
 }
-log(AddValues(3, 2));
+|> AddValues(3, 2);
 int integer = 1;
-log(integer);
+|> integer;
 
-log("functions with optional parameters ------------------------------------");
+|> "functions with optional parameters ------------------------------------";
 int Increment(int a, int b = 1) {
 	return a + b;
 }
-log(Increment(5));
-log(Increment(5, 3));
+|> Increment(5);
+|> Increment(5, 3);
 
-log("type system tests -----------------------------------------------------");
+|> "type system tests -----------------------------------------------------";
 int integerVar = 5;
 //int shouldBeInteger = "FAIL"; wrong type!
 
-log("function overload tests -----------------------------------------------");
+|> "function overload tests -----------------------------------------------";
 int Add(int a, int b) {
 	return a + b;
 }
 string Add(string a, string b) {
 	return a + b;
 }
-log(Add(5, 10));
-log(Add("5", "10"));
+|> Add(5, 10);
+|> Add("5", "10");
 
-log("type conversion tests -------------------------------------------------");
+|> "type conversion tests -------------------------------------------------";
 var integerValue = 10;
 var stringValue = integerValue as string;
 var combinedInteger = integerValue + 10;
 var combinedString = stringValue + "10";
-log(combinedInteger);
-log(combinedString);
-log((5 + 10 as string) + "5");
+|> combinedInteger;
+|> combinedString;
+|> (5 + 10 as string) + "5";
 
-log("logical operators -----------------------------------------------------");
+|> "logical operators -----------------------------------------------------";
 var firstValue = true;
 var secondValue = false;
-log(firstValue || secondValue);
-log(firstValue && secondValue);
-log((firstValue or secondValue) and firstValue);
-log((firstValue and secondValue) or secondValue);
-log(!firstValue);
-log(not secondValue);
+|> firstValue || secondValue;
+|> firstValue && secondValue;
+|> (firstValue or secondValue) and firstValue;
+|> (firstValue and secondValue) or secondValue;
+|> !firstValue;
+|> not secondValue;
 
-log("chars -----------------------------------------------------------------");
+|> "chars -----------------------------------------------------------------";
 var H = 'H';
 var e = 'e';
 var l = 'l';
@@ -249,18 +246,18 @@ var W = 'W';
 var r = 'r';
 var d = 'd';
 var exclamationMark = '!';
-log(H + e + l + l + o + space + W + o + r + l + d + exclamationMark);
+|> H + e + l + l + o + space + W + o + r + l + d + exclamationMark;
 
-log("classes ---------------------------------------------------------------");
+|> "classes ---------------------------------------------------------------";
 class TestClass {
 	var test = 0;
 
 	void Call() {
-		log("Call to TestClass.Call");
+		|> "Call to TestClass.Call";
 	}
 }
 var instance = new TestClass();
 instance.Call();
-log(instance.test);
+|> instance.test;
 
 // end of program

@@ -1,104 +1,109 @@
 ﻿namespace FAIL.LanguageIntegration;
 
-internal enum TokenType
+public enum TokenType
 {
-    Number,
+	Integer,
 
-    StrokeCalculation,
-    DotCalculation,
+	StrokeCalculation,
+	DotCalculation,
 
-    EndOfStatement,
-    String,
-    OpeningParenthese,
-    ClosingParenthese,
-    Identifier,
-    Assignment,
-    OpeningBracket,
-    ClosingBracket,
-    Separator,
-    Boolean,
-    TestOperator,
-    SelfAssignment,
-    IncrementalOperator,
+	EndOfStatement,
+	String,
+	OpeningParenthesis,
+	ClosingParenthesis,
+	Identifier,
+	Assignment,
+	OpeningBracket,
+	ClosingBracket,
+	Separator,
+	Boolean,
+	TestOperator,
+	SelfAssignment,
+	IncrementalOperator,
 
-    Var,
-    Void,
-    Return,
-    If,
-    Else,
-    While,
-    Break,
-    Continue,
-    For,
-    DataType,
-    Conversion,
-    LogicalOperator,
-    Char,
-    Accessor,
-    Class,
-    New,
+	Var,
+	Void,
+	Return,
+	If,
+	Else,
+	While,
+	Break,
+	Continue,
+	For,
+	DataType,
+	Conversion,
+	LogicalOperator,
+	Char,
+	Accessor,
+	Class,
+	New,
+	WriteLine,
+	Double,
 }
 
 internal static class TokenTypeTranslator
 {
-    public const int LONGEST_OPERATOR = 2; // just to avoid unnessesary looping in Tokenizer.CheckForOperator()
+	public const int LONGEST_OPERATOR = 2; // just to avoid unnecessary looping in Tokenizer.CheckForOperator()
 
-    public static TokenType? GetOperator(string raw) => raw switch
-    {
-        // Operators
-        "==" or "!=" or ">=" or "<=" or ">" or "<" => TokenType.TestOperator,
-        "||" or "&&" or "!" => TokenType.LogicalOperator, 
-        "+=" or "-=" or "*=" or "/=" => TokenType.SelfAssignment,
-        "++" or "--" => TokenType.IncrementalOperator,
-        "+" or "-" => TokenType.StrokeCalculation,
-        "*" or "/" => TokenType.DotCalculation,
+	public static TokenType? GetOperator(string raw) => raw switch
+	{
+		// IO
+		"|>" => TokenType.WriteLine,
 
-        // Annotation Signs
-        "," => TokenType.Separator,
-        ";" => TokenType.EndOfStatement,
-        "=" => TokenType.Assignment,
-        "." => TokenType.Accessor,
+		// Operators
+		"==" or "!=" or ">=" or "<=" or ">" or "<" => TokenType.TestOperator,
+		"||" or "&&" or "!" => TokenType.LogicalOperator,
+		"+=" or "-=" or "*=" or "/=" => TokenType.SelfAssignment,
+		"++" or "--" => TokenType.IncrementalOperator,
+		"+" or "-" => TokenType.StrokeCalculation,
+		"*" or "/" => TokenType.DotCalculation,
 
-        // Delimiters
-        "(" => TokenType.OpeningParenthese,
-        ")" => TokenType.ClosingParenthese,
-        "{" => TokenType.OpeningBracket,
-        "}" => TokenType.ClosingBracket,
+		// Annotation Signs
+		"," => TokenType.Separator,
+		";" => TokenType.EndOfStatement,
+		"=" => TokenType.Assignment,
+		"." => TokenType.Accessor,
 
-        // Not found
-        _ => null,
-    };
-    public static TokenType? GetKeyWord(string raw) => raw switch
-    {
-        // Special types
-        "var" => TokenType.Var,
-        "void" => TokenType.Void,
+		// Delimiters
+		"(" => TokenType.OpeningParenthesis,
+		")" => TokenType.ClosingParenthesis,
+		"{" => TokenType.OpeningBracket,
+		"}" => TokenType.ClosingBracket,
 
-        // Data types
-        "object" or "int" or "double" or "string" or "char" or "bool" => TokenType.DataType,
+		// Not found
+		_ => null,
+	};
+	public static TokenType? GetKeyword(string raw) => raw switch
+	{
+		// Special types
+		"var" => TokenType.Var,
+		"void" => TokenType.Void,
 
-        // OOP
-        "class" => TokenType.Class,
-        "new" => TokenType.New,
+		// Data types
+		"object" or "int" or "double" or "string" or "char" or "bool" => TokenType.DataType,
 
-        // Decisions
-        "return" => TokenType.Return,
-        "if" => TokenType.If,
-        "else" => TokenType.Else,
+		// OOP
+		"class" => TokenType.Class,
+		"new" => TokenType.New,
 
-        // Loops
-        "while" => TokenType.While,
-        "break" => TokenType.Break,
-        "continue" => TokenType.Continue,
-        "for" => TokenType.For,
+		// Decisions
+		"return" => TokenType.Return,
+		"if" => TokenType.If,
+		"else" => TokenType.Else,
 
-        // Conversions
-        "as" => TokenType.Conversion,
+		// Loops
+		"while" => TokenType.While,
+		"break" => TokenType.Break,
+		"continue" => TokenType.Continue,
+		"for" => TokenType.For,
 
-        // Logical operators
-        "or" or "and" or "not" => TokenType.LogicalOperator,
+		// Conversions
+		"as" => TokenType.Conversion,
 
-        // Not found
-        _ => null,
-    };
+		// Logical operators
+		"or" or "and" or "not" => TokenType.LogicalOperator,
+
+		// Not found
+		_ => null,
+	};
 }

@@ -1,5 +1,5 @@
 ﻿namespace FAIL.Metadata;
-internal enum BinaryOperation
+public enum BinaryOperation
 {
     Addition,
     And,

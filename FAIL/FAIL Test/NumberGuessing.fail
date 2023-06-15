@@ -3,18 +3,18 @@ var tries = 0;
 
 while (true) {
 	tries++;
-	var guess = input("Guess a number: ");
+	var guess = input("Guess a number: ") as int;
 
 	if (solution == guess) {
-		log("You won!");
-		log("You needed a total of " + tries + " tries to guess the right number.");
+		|> "You won!";
+		|> "You needed a total of " + (tries as string) + " tries to guess the right number.";
 		break;
 	}
 	else if (guess > solution) {
-		log("You guessed to high!");
+		|> "You guessed to high!";
 	} else {
-		log("You guessed to low!");
+		|> "You guessed to low!";
 	}
 	
-	log("\n--- Next try! ---\n\n")
+	|> "\n--- Next try! ---\n\n";
 }

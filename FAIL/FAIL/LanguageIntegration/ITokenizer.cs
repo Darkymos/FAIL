@@ -1,6 +1,6 @@
 ﻿namespace FAIL.LanguageIntegration;
 
-internal interface ITokenizer
+public interface ITokenizer
 {
-    List<Token> Call(string code, string fileName);
+	List<Token> Tokenize();
 }

@@ -1,280 +1,238 @@
 ﻿using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text;
 
-[assembly: InternalsVisibleTo("FAIL Test")]
 namespace FAIL.LanguageIntegration;
+public record struct Token(TokenType Type, dynamic Value, uint Row, uint Column, string FileName);
 
-internal record struct Token(TokenType Type, dynamic Value, uint Row, uint Column, string FileName);
-
-internal class Tokenizer : ITokenizer
+public sealed class Tokenizer : ITokenizer
 {
-    private string? FileName;
-    private char[]? Raw;
-    private uint Row = 1;
-    private uint Column = 1;
-    private int CurrentPosition;
+	private readonly string FileName;
+	private readonly List<char> Raw;
+	private uint Row = 1;
+	private uint Column = 0;
+	private int CurrentPosition = -1;
 
-    private StringBuilder Buffer = new();
-    private State CurrentState = State.Start;
-    private CommentState CommentState = CommentState.None;
+	private StringBuilder Buffer = new();
+	private State CurrentState = State.Start;
+	private CommentState CommentState = CommentState.None;
 
 
-    public List<Token> Call(string code, string fileName)
-    {
-        FileName = fileName;
-        Raw = code.ToCharArray();
+	public Tokenizer(List<string> files)
+	{
+		FileName = files.First();
+		Raw = File.ReadAllText(FileName).ToCharArray().ToList();
+	}
 
-        var tokenList = new List<Token>();
 
-        while (true)
-        {
-            var nullableCharacter = Read();
-            Column++;
+	public List<Token> Tokenize()
+	{
+		var tokens = new List<Token>();
 
-            // check for end of file
-            if (nullableCharacter is null)
-            {
-                CheckForValidToken(tokenList);
-                break;
-            }
+		var index = 0;
+		Raw.ToDictionary(x => index++).ToList().ForEach(x =>
+		{
+			var item = x.Value;
 
-            var character = nullableCharacter.Value;
+			if (CurrentPosition >= x.Key) return;
 
-            // everything in a string is part of it
-            if (CurrentState is State.String)
-            {
-                _ = Buffer.Append(character);
+			CurrentPosition++;
+			Column++;
 
-                switch (character)
-                {
-                    case '\n': // new line
-                        Row++;
-                        Column = 1;
-                        break;
-                    case '"': // string end
-                        CheckForValidToken(tokenList);
-                        break;
-                    default:
-                        break;
-                }
+			if (item is '\n')
+			{
+				EndOfLine();
+				return;
+			}
 
-                continue;
-            }
+			if (CommentState is CommentState.Block && item is '*' && Raw.GetRange(CurrentPosition + 1, 1).First() == '/')
+			{
+				CurrentPosition++;
+				CommentState = CommentState.None;
+				return;
+			}
+			if (CommentState is not CommentState.None) return;
+			if (item is '/')
+			{
+				CommentState = (item + Raw[CurrentPosition + 1].ToString()) switch
+				{
+					"//" => CommentState.Line,
+					"/*" => CommentState.Block,
+					_ => CommentState.None
+				};
+				if (CommentState is not CommentState.None) return;
+			}
 
-            // end of line reached, doesn't mean the current statement's end though
-            if (character is '\n')
-            {
-                EndOfLine();
-                continue;
-            }
+			switch (CurrentState)
+			{
+				case State.Int:
+					if (char.IsDigit(item))
+					{
+						_ = Buffer.Append(item);
+						return;
+					}
 
-            // contents in comments are skipped
-            if (CommentState is CommentState.Block && character is '*' && character + LookAhead(1) is "*/")
-            {
-                _ = Read(1);
-                CommentState = CommentState.None;
-                continue;
-            }
-            if (CommentState is not CommentState.None) continue;
+					if (item is '.')
+					{
+						_ = Buffer.Append(item);
+						CurrentState = State.Double;
+						return;
+					}
 
-            // check for a comment assignment 
-            if (character is '/')
-            {
-                CommentState = (character + LookAhead(1)) switch
-                {
-                    "//" => CommentState.Line,
-                    "/*" => CommentState.Block,
-                    _ => CommentState.None
-                };
-                if (CommentState is not CommentState.None) continue;
-            }
+					if (ClearBuffer() is Token possibleToken) tokens.Add(possibleToken);
+					CurrentState = State.Start;
+					break;
+				case State.Text:
+					_ = Buffer.Append(item);
+					return;
+				case State.String:
+					_ = Buffer.Append(item);
 
-            // check for char
-            if (character is '\'')
-            {
-                var possibleChar = LookAhead(2);
+					switch (item)
+					{
+						case '\n': // new line
+							Row++;
+							Column = 0;
+							break;
+						case '"': // string end
+							CheckForValidToken(tokens);
+							CurrentState = State.Start;
+							break;
+						default:
+							break;
+					}
 
-                _ = Buffer.Append(character)
-                          .Append(possibleChar);
+					return;
+				case State.Double:
+					if (char.IsDigit(item))
+					{
+						_ = Buffer.Append(item);
+						return;
+					}
 
-                CurrentState = State.Char;
+					if (ClearBuffer() is Token possibleNextToken) tokens.Add(possibleNextToken);
+					CurrentState = State.Start;
+					break;
+				case State.Char:
+					break;
+				case State.Start:
+					break;
+				default:
+					break;
+			}
 
-                if (possibleChar[1] is '\'')
-                {
-                    if (ClearBuffer() is Token possibleToken) tokenList.Add(possibleToken);
+			if (item is '\'')
+			{
+				var possibleChar = new string(Raw.GetRange(CurrentPosition + 1, 2).ToArray());
 
-                    _ = Read(2);
-                    CurrentState = State.Start;
-                    continue;
-                }
-                else throw ExceptionCreator.NotAChar(new(TokenType.Char, character.ToString() + possibleChar, Row, Column, FileName));
-            }
+				_ = Buffer.Append(item).Append(possibleChar);
 
-            // all whitespace are considered as an end of the current token
-            if (char.IsWhiteSpace(character))
-            {
-                if (ClearBuffer() is Token possibleToken) tokenList.Add(possibleToken);
-                continue;
-            }
+				CurrentState = State.Char;
 
-            // check for any kind of operator specified in the Operators dictionary
-            var tokens = CheckForOperator(character).ToList();
-            if (tokens.Count > 0)
-            {
-                foreach (var token in tokens) if (token is not null) tokenList.Add(token.Value);
-                continue;
-            }
+				if (possibleChar[1] is not '\'') throw ExceptionCreator.NotAChar(new(TokenType.Char, item.ToString() + possibleChar, Row, Column, FileName));
 
-            // booleans
-            if (CurrentState is State.Start)
-            {
-                if (character is 't' && character + LookAhead(3) is "true")
-                {
-                    _ = Read(3);
-                    Buffer = new();
-                    tokenList.Add(new(TokenType.Boolean, true, Row, Column, FileName));
-                    continue;
-                }
-                if (character is 'f' && character + LookAhead(4) is "false")
-                {
-                    _ = Read(4);
-                    Buffer = new();
-                    tokenList.Add(new(TokenType.Boolean, false, Row, Column, FileName));
-                    continue;
-                }
-            }
+				if (ClearBuffer() is Token possibleToken) tokens.Add(possibleToken);
 
-            // state machine for different data types
-            while (true)
-            {
-                if (CurrentState is State.Start)
-                {
-                    _ = Buffer.Append(character);
+				CurrentPosition += 2;
+				CurrentState = State.Start;
+				return;
+			}
 
-                    if (character is '"') CurrentState = State.String;
-                    if (char.IsDigit(character))
-                    {
-                        CurrentState = State.Int;
-                        break;
-                    }
+			if (char.IsWhiteSpace(item))
+			{
+				if (ClearBuffer() is Token possibleToken) tokens.Add(possibleToken);
+				return;
+			}
 
-                    break;
-                }
-                if (CurrentState is State.Int)
-                {
-                    if (char.IsDigit(character))
-                    {
-                        _ = Buffer.Append(character);
-                        break;
-                    }
+			var tokenList = CheckForOperator(item).ToList();
+			if (tokenList.Count > 0)
+			{
+				foreach (var token in tokenList) if (token is not null) tokens.Add(token.Value);
+				return;
+			}
 
-                    if (character is '.')
-                    {
-                        _ = Buffer.Append(character);
-                        CurrentState = State.Double;
-                        break;
-                    }
+			if (item is 't' && item + new string(Raw.GetRange(CurrentPosition + 1, 3).ToArray()) is "true")
+			{
+				CurrentPosition += 3;
+				Buffer = new();
+				tokens.Add(new(TokenType.Boolean, true, Row, Column, FileName));
+				return;
+			}
+			if (item is 'f' && item + new string(Raw.GetRange(CurrentPosition + 1, 4).ToArray()) is "false")
+			{
+				CurrentPosition += 4;
+				Buffer = new();
+				tokens.Add(new(TokenType.Boolean, false, Row, Column, FileName));
+				return;
+			}
 
-                    if (ClearBuffer() is Token possibleToken) tokenList.Add(possibleToken);
-                    CurrentState = State.Start;
-                    continue;
-                }
-                if (CurrentState is State.Double)
-                {
-                    if (char.IsDigit(character))
-                    {
-                        _ = Buffer.Append(character);
-                        break;
-                    }
+			if (item is '"') CurrentState = State.String;
+			else if (char.IsDigit(item)) CurrentState = State.Int;
 
-                    if (ClearBuffer() is Token possibleToken) tokenList.Add(possibleToken);
-                    CurrentState = State.Start;
-                    continue;
-                }
-                if (CurrentState is State.Text)
-                {
-                    _ = Buffer.Append(character);
-                    break;
-                }
-            }
-        }
+			_ = Buffer.Append(item);
+		});
 
-        return tokenList;
-    }
+		CheckForValidToken(tokens);
 
-    private char? Read() => CurrentPosition >= Raw!.Length ? null : Raw[CurrentPosition++];
-    private char[]? Read(int length)
-    {
-        if (CurrentPosition + length >= Raw!.Length) return null;
-        
-        CurrentPosition += length;
-        return Raw[(CurrentPosition - length)..CurrentPosition];
-    }
+		return tokens;
+	}
 
-    private void CheckForValidToken(List<Token> tokenList)
-    {
-        if (ClearBuffer() is Token possibleToken) tokenList.Add(possibleToken);
-    }
-    private Token? ClearBuffer()
-    {
-        Token? token;
+	private void EndOfLine()
+	{
+		Row++;
+		Column = 0;
+		if (CommentState is CommentState.Line) CommentState = CommentState.None;
+	}
 
-        if (Buffer.Length == 0) token = null;
-        else if (CurrentState == State.Int) token = new(TokenType.Number, Convert.ToInt32(Buffer.ToString()), Row, Column - (uint)Buffer.Length, FileName!);
-        else if (CurrentState == State.Double) token = new(TokenType.Number, Convert.ToDouble(Buffer.ToString(), new CultureInfo("en-US")), Row, Column - (uint)Buffer.Length, FileName!);
-        else if (CurrentState == State.String) token = new(TokenType.String, Buffer.ToString()[1..^1], Row, Column - (uint)Buffer.Length, FileName!);
-        else if (CurrentState == State.Char) token = new(TokenType.Char, Buffer[1], Row, Column - (uint)Buffer.Length, FileName!);
-        else
-        {
-            var possibleKeyWord = TokenTypeTranslator.GetKeyWord(Buffer.ToString());
+	private void CheckForValidToken(List<Token> tokenList)
+	{
+		if (ClearBuffer() is Token possibleToken) tokenList.Add(possibleToken);
+	}
+	private Token? ClearBuffer()
+	{
+		Token? token;
 
-            if (possibleKeyWord is not null) token = Buffer.ToString() switch
-            {
-                "bool" => new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName!),
-                "string" => new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName!),
-                "char" => new(TokenType.DataType, "Char", Row, Column - (uint)Buffer.Length, FileName!),
-                "int" => new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName!),
-                "double" => new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName!),
-                _ => new(possibleKeyWord!.Value, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!),
-            };
-            else token = new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!);
-        }
+		if (Buffer.Length is 0) token = null;
+		else if (CurrentState is State.Int) token = new(TokenType.Integer, Convert.ToInt32(Buffer.ToString()), Row, Column - (uint)Buffer.Length, FileName!);
+		else if (CurrentState is State.Double) token = new(TokenType.Double, Convert.ToDouble(Buffer.ToString(), new CultureInfo("en-US")), Row, Column - (uint)Buffer.Length, FileName!);
+		else if (CurrentState is State.String) token = new(TokenType.String, Buffer.ToString()[1..^1], Row, Column - (uint)Buffer.Length, FileName!);
+		else if (CurrentState is State.Char) token = new(TokenType.Char, Buffer[1], Row, Column - (uint)Buffer.Length, FileName!);
+		else
+		{
+			var possibleKeyWord = TokenTypeTranslator.GetKeyword(Buffer.ToString());
 
-        Buffer = new();
-        CurrentState = State.Start;
+			token = possibleKeyWord is not null
+				? Buffer.ToString() switch
+				{
+					"bool" => new(TokenType.DataType, "Boolean", Row, Column - (uint)Buffer.Length, FileName!),
+					"string" => new(TokenType.DataType, "String", Row, Column - (uint)Buffer.Length, FileName!),
+					"char" => new(TokenType.DataType, "Char", Row, Column - (uint)Buffer.Length, FileName!),
+					"int" => new(TokenType.DataType, "Integer", Row, Column - (uint)Buffer.Length, FileName!),
+					"double" => new(TokenType.DataType, "Double", Row, Column - (uint)Buffer.Length, FileName!),
+					_ => new(possibleKeyWord!.Value, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!),
+				}
+				: new(TokenType.Identifier, Buffer.ToString(), Row, Column - (uint)Buffer.Length, FileName!);
+		}
 
-        return token;
-    }
-    private string LookAhead(int length)
-    {
-        var val = Read(length);
-        CurrentPosition -= length;
+		Buffer = new();
+		CurrentState = State.Start;
 
-        return val is null ? "" : new string(val);
-    }
+		return token;
+	}
 
-    private IEnumerable<Token?> CheckForOperator(char character)
-    {
-        for (var i = TokenTypeTranslator.LONGEST_OPERATOR; i >= 0; i--)
-        {
-            var operatorString = character + LookAhead(i);
-            var possibleToken = TokenTypeTranslator.GetOperator(operatorString);
+	private IEnumerable<Token?> CheckForOperator(char character)
+	{
+		for (var i = TokenTypeTranslator.LONGEST_OPERATOR; i >= 0; i--)
+		{
+			var operatorString = character + new string(Raw.GetRange(CurrentPosition + 1, i).ToArray());
+			var possibleToken = TokenTypeTranslator.GetOperator(operatorString);
 
-            if (possibleToken is not null && !(possibleToken == TokenType.Accessor && CurrentState == State.Int))
-            {
-                yield return ClearBuffer();
-                _ = Read(i);
-                yield return new(possibleToken!.Value, operatorString, Row, Column, FileName!);
-                yield break;
-            }
-        }
-    }
-
-    private void EndOfLine()
-    {
-        Row++;
-        Column = 0;
-        if (CommentState is CommentState.Line) CommentState = CommentState.None;
-    }
+			if (possibleToken is not null && !(possibleToken == TokenType.Accessor && CurrentState == State.Int))
+			{
+				yield return ClearBuffer();
+				CurrentPosition += i;
+				yield return new(possibleToken!.Value, operatorString, Row, Column, FileName!);
+				yield break;
+			}
+		}
+	}
 }

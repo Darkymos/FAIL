@@ -1,7 +1,7 @@
 ﻿using FAIL.LanguageIntegration;
 
 namespace FAIL.ElementTree;
-internal class Variable : AST
+public class Variable : AST
 {
     public string Name { get; }
     public Type Type { get; }

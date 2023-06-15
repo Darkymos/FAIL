@@ -6,5 +6,5 @@ internal enum State
     Text,
     String,
     Char,
-    Double,
+    Double
 }

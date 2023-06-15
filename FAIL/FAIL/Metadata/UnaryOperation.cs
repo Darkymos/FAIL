@@ -1,5 +1,5 @@
 ﻿namespace FAIL.Metadata;
-internal enum UnaryOperation
+public enum UnaryOperation
 {
     Negation,
     Not,

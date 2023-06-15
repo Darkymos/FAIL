@@ -1,7 +1,7 @@
 ﻿using FAIL.LanguageIntegration;
 
 namespace FAIL.ElementTree;
-internal abstract class AST
+public abstract class AST
 {
     public Token? Token { get; init; }
 

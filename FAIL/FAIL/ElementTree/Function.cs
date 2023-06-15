@@ -3,8 +3,8 @@ using FAIL.LanguageIntegration;
 
 namespace FAIL.ElementTree;
 
-internal record FunctionOverload(Type ReturnType, CommandList Parameters, CommandList Body);
-internal class Function : AST
+public record FunctionOverload(Type ReturnType, CommandList Parameters, CommandList Body);
+public class Function : AST
 {
     public string Name { get; }
     public List<FunctionOverload> Overloads { get; } = new();

@@ -1,4 +1,11 @@
-﻿using FAIL.LanguageIntegration;
+﻿using FAIL;
+using FAIL.LanguageIntegration;
+using Microsoft.Extensions.Logging;
 
-var interpreter = new Interpreter(LogLevel.Warn, @"C:\Users\Micha\Desktop\Darkymos\FAIL\FAIL\FAIL Test\Test.fail");
-Console.WriteLine();
+var ast = new CompilerHostBuilder()
+.ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Trace))
+.AddTokenizer<Tokenizer>()
+.AddParser<Parser>()
+.AddFile(@"C:\Users\Micha\Desktop\Darkymos\FAIL\FAIL\FAIL Test\Test.fail")
+.Build()
+.GetRequiredService<IParser>().Parse().Call();

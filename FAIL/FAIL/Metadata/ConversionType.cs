@@ -1,5 +1,5 @@
 ﻿namespace FAIL.Metadata;
-internal enum ConversionType
+public enum ConversionType
 {
     Implicit,
     Explicit,

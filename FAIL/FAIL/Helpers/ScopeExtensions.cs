@@ -3,9 +3,9 @@
 namespace FAIL.Helpers;
 public static class ScopeExtensions
 {
-	public static Scope AddWhile(this Scope collection, Func<bool> predicate, Func<Scope, AST> elementReceiver)
+	public static Scope AddWhile(this Scope collection, Func<Scope, bool> predicate, Func<Scope, AST> elementReceiver)
 	{
-		while (predicate()) collection.Add(elementReceiver(collection));
+		while (predicate(collection)) collection.Add(elementReceiver(collection));
 		return collection;
 	}
 

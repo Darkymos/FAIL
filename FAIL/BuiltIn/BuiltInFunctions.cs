@@ -12,19 +12,13 @@ internal static class BuiltInFunctions
         {
             "|>",
             (Log_Call,
-            new()
-            {
-                new(new("var"), false)
-            },
+            [ new(new("var"), false) ],
             new("Void"))
         },
         {
             "input",
             (Input_Call,
-            new()
-            {
-                new(new("var"), true)
-            },
+            [ new(new("var"), true) ],
             new(nameof(DataTypes.String)))
         }
     };
@@ -41,7 +35,7 @@ internal static class BuiltInFunctions
 
     private static Instance Input_Call(CommandList arguments)
     {
-        var result = arguments.Commands.Entries.Any() ? arguments.Commands.Entries[0].Call()!.Value : null;
+        var result = arguments.Commands.Entries.Count != 0 ? arguments.Commands.Entries[0].Call()!.Value : null;
 
         if (result is not null) Console.Write(result);
         return new Instance(DataTypes.String.Type, Console.ReadLine()!);

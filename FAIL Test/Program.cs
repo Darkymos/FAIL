@@ -6,6 +6,6 @@ var ast = new CompilerHostBuilder()
 .ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Trace))
 .AddTokenizer<Tokenizer>()
 .AddParser<Parser>()
-.AddFile(@"D:\FAIL\FAIL\FAIL Test\Test.fail")
+.AddFile(Path.Combine(Directory.GetCurrentDirectory().Split(@"\bin")[0], "Test.fail"))
 .Build()
 .GetRequiredService<IParser>().Parse().Call();
